@@ -1,0 +1,183 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Quema servicios</title>
+	<!--dhtmlx visual designer http://dhtmlx.com/docs/products/visualDesigner/live/#2ga190-->
+    <style type="text/css">
+    
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+            overflow: hidden;
+        }
+        
+        #container{width:100%; height:100%; text-align:center;}
+        #map{position:relative; width:100%; height:100%; background-color:#FFFFEF; float:left; padding:10px;}
+    </style>
+    <!--Añadimos libreria proj4js-->
+    <script src="../api/proj4js-1.1.0/lib/proj4js-compressed.js"></script>
+    <!--Añadimos definición de sistemas de coordenadas-->
+    <script src="ign/js/srsDefsProj4js.js"></script>
+    <!--Añadimos libreria Openlayers-->
+	<script src="../api/OpenLayers-2.12/OpenLayers.debug.js"></script>
+    <!--Añadimos la customizacion del layerswitcher-->
+	<script src="ign/lib/LayerSwitcher.js"></script>
+    <!--Añadimos las funciones para la gestion de cambio del sistema de coordenadas del map-->
+    <script src="ign/js/cambioSRSMap.js"></script>
+    <!--Añadimos la posibilidad de mostrar ventanas dhtmlx-->
+    <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxwindows.css">
+    <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxWindows/codebase/skins/dhtmlxwindows_dhx_skyblue.css">
+    <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxcommon.js"></script>
+    <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxcontainer.js"></script>
+    <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxwindows.js"></script>
+    <!--Añadimos la posibilidad de mostrar formularios dhtmlx-->
+    <link rel="stylesheet" type="text/css" href="./../api/dhtmlx-3.5/dhtmlxForm/codebase/skins/dhtmlxform_dhx_skyblue.css">
+    <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/dhtmlxcommon.js"></script>
+    <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/dhtmlxform.js"></script>    
+	<!--Añadimos la posibilidad de mostrar el boton 0|1 a los formularios y las imagenes-->
+	<script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/ext/dhtmlxform_item_btn2state.js"></script>	
+    <style type="text/css">
+        /* toggle-style checkbox */
+        /* enabled, not checked */
+        .dhxform_obj_dhx_skyblue div.dhxform_img.btn2state_0 {
+            background-image: url("../api/dhtmlx-3.5/dhtmlxForm/samples/02_items/imgs/toggle_off.png");
+            width: 42px;
+            height: 20px;
+        }
+        /* enabled, checked */
+        .dhxform_obj_dhx_skyblue div.dhxform_img.btn2state_1 {
+            background-image: url("../api/dhtmlx-3.5/dhtmlxForm/samples/02_items/imgs/toggle_on.png");
+            width: 42px;
+            height: 20px;
+        }
+    </style>
+    <!--Añadimos la posibilidad de introdcir slides-->
+    <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxSlider/codebase/dhtmlxslider.css">
+    <!--<script src="../api/dhtmlx-3.5/dhtmlxSlider/codebase/dhtmlxcommon.js"></script>-->
+    <script src="../api/dhtmlx-3.5/dhtmlxSlider/codebase/dhtmlxslider.js"></script>        
+    
+    <script src="ign/js/addWMSLayerDialog.js"></script>
+    
+    <script type="text/javascript">
+
+        var map, layer, info, layerinfo;
+		dhtmlx.image_path='../api/dhtmlx-3.5/dhtmlxWindows/codebase/imgs/';
+        OpenLayers.ProxyHost = "proxy.php?url=";
+        
+        function init(){
+        
+            var lon = -4.10169;
+            var lat = 40.96766;
+            var zoom = 0;
+            
+			var mapOptions = {
+                maxResolution: 0.0439453125, 
+                //minResolution: 1.3411045074462891e-006,
+                //resolutions: [0.0439453125, 0.02197265625, 0.010986328125, 0.0054931640625, 0.00274658203125, 0.001373291015625, 0.0006866455078125, 0.00034332275390625, 0.000171661376953125, 8.58306884765625e-005, 4.291534423828125e-005, 2.1457672119140625e-005, 1.0728836059570313e-005, 5.3644180297851563e-006, 2.6822090148925781e-006, 1.3411045074462891e-006],
+                maxExtent: new OpenLayers.Bounds(-180,-90,180,90),
+                numZoomLevels: 16,
+                allOverlays: true,
+                projection: 'EPSG:4258',
+                reproject: false,
+                eventListeners: { moveend: zoomPanManage } };
+			
+            map = new OpenLayers.Map( 'map', mapOptions);
+
+            var layer = new OpenLayers.Layer.WMS( "PNOA WMS",
+                    "http://www.idee.es/wms/PNOA/PNOA",
+                    {layers: 'pnoa'}, {visibility:false});
+            map.addLayer(layer);
+            layer.isBaseLayer = false;
+            layer.maxResolution = 8.58306884765625e-005;
+            layer.minResolution = 1.3411045074462891e-006;
+            layer.alwaysInRange = true;
+            //layer.initResolutions();
+           
+            infolayers = new Array();
+            infolayers[0] = layer;
+
+            layer = new OpenLayers.Layer.WMS( "CC WMS DivisionTerritorial",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'DivisionTerritorial', transparent: 'true'}, {visibility:false} );
+			map.addLayer(layer);
+			
+            layer = new OpenLayers.Layer.WMS( "CC WMS FondoUrbano",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'FondoUrbano', transparent: 'true'}, {visibility:false} );
+            map.addLayer(layer);
+            
+            layer = new OpenLayers.Layer.WMS( "CC WMS SeccionCensal",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'SeccionCensal', transparent: 'true'}, {visibility:false} );
+            map.addLayer(layer);
+			
+ 			layer = new OpenLayers.Layer.WMS( "CC WMS CodigoPostal",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'CodigoPostal', transparent: 'true'}, {visibility:false} );
+            map.addLayer(layer);
+
+            layer = new OpenLayers.Layer.WMS( "CC WMS Vial",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'Vial', transparent: 'true'}, {visibility:false} );
+            map.addLayer(layer);
+
+            layer = new OpenLayers.Layer.WMS( "CC WMS Portal",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'Portal', transparent: 'true'}, {visibility:false} );
+            map.addLayer(layer);
+			
+            layer = new OpenLayers.Layer.WMS( "CC WMS Toponimo",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'Toponimo', transparent: 'true'}, {visibility:false} );
+            map.addLayer(layer);
+			
+
+            layer = new OpenLayers.Layer.WMS( "CC WMS-C Todas",
+                    "http://www.cartociudad.es/wms-c/CARTOCIUDAD/CARTOCIUDAD",
+                    {layers: 'Todas', transparent: 'true'}, {visibility:true} );
+			map.addLayer(layer);
+			
+            map.baseLayer = layer;
+			
+            //vlayer = new OpenLayers.Layer.Vector( "Editable" );
+            //map.addLayer(vlayer);
+            
+            info = new OpenLayers.Control.WMSGetFeatureInfo({
+                url: 'http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD', 
+                title: 'Identify features by clicking',
+                queryVisible: true,
+                eventListeners: {
+                    getfeatureinfo: function(event) {
+                        map.addPopup(new OpenLayers.Popup.FramedCloud(
+                            "chicken", 
+                            map.getLonLatFromPixel(event.xy),
+                            null,
+                            event.text,
+                            null,
+                            true
+                        ));
+                    }
+                }
+            });
+            map.addControl(info);
+            info.activate();            
+            
+            map.addControl(new es.IGN.LayerSwitcher());
+            //map.addControl(new OpenLayers.Control.LayerSwitcher());
+            map.addControl(new OpenLayers.Control.MousePosition());
+            //map.addControl(new OpenLayers.Control.EditingToolbar(vlayer));
+            //var snap = new OpenLayers.Control.Snapping({layer: vlayer});
+            //map.addControl(snap);
+            //snap.activate();            
+
+            map.setCenter(new OpenLayers.LonLat(lon, lat), zoom);  
+        }
+            
+    </script>
+  </head>
+
+  <body onload="init()">
+    <div id="container">
+    <div id="map" class="smallmap"></div>
+  </body>
+</html>
