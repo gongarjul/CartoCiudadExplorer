@@ -122,7 +122,7 @@ var Buscador = {
                 }
                 else
                 {
-                    console.log('quiero buscar ya');
+                    //console.log('quiero buscar ya');
                 }
 
             });
@@ -460,7 +460,6 @@ var Buscador = {
                     }
 
                     var features = loader.doXPathMB('//Entidad', null, [{prefix: null, uri:'http://www.idee.es/mne'}]);
-                    
                     for(var i=0; i<features.length;i++)
                     {
                         var feature = loader.xmlNodeToJSON(features[i]);

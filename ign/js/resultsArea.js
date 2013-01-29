@@ -7,10 +7,13 @@ var resultsArea = {
 	
         //area de reusltados
         resultsAreaAccordion: null,
-        resultsDataView : null,
+        resultsDataView: null,
+        map: null,
         
 		//funcion para inicializar el Buscador
-        initialize: function(container) {
+        initialize: function(container, map) {
+        
+            this.map = map;
 			
 			//dependiendo del tipo del par?metro instanciamos el formulario dhtmlx
 			switch(typeof container)
@@ -63,12 +66,23 @@ var resultsArea = {
             this.resultsDataView = this.resultsAreaAccordion.cells('a').attachDataView( { type:{ template:''} } );
             this.resultsDataView.define('type', 'simpleTemplate');
             
+            this.resultsDataView.attachEvent("onItemClick", function (id, ev, html){
+                resultsArea.singleton.resultsDataView_onItemClick(id,ev,html);
+                return true;
+            }); 
+            
 			this.resultsAreaAccordion.addItem('b', 'Detalle');
 			this.resultsAreaAccordion.cells('b').attachObject('detail');
-			this.resultsAreaAccordion.openItem('a');		
-           
+			this.resultsAreaAccordion.openItem('a');
+
         },
-    
+
+        resultsDataView_onItemClick: function(id,ev,html){
+            var feature = this.resultsDataView.get(id)
+            this.zoomToFeature(feature);
+            this.showDetailedText(feature);
+        },
+        
         addResults: function(features){
         
             if(!features || features.length == 0)
@@ -77,6 +91,15 @@ var resultsArea = {
             }
             else
             {
+                var geojson_format = new OpenLayers.Format.GeoJSON();
+                var vector_layer = new OpenLayers.Layer.Vector(); 
+                map.addLayer(vector_layer);
+
+                var geoJSONfeatureCollection = { type: "FeatureCollection", features: [] }
+                var geoJSONfeature;
+                
+                var srsSrc = 'EPSG:4258', srsDest = this.map.projection;
+                
                 for(var i = 0; i <features.length; i++)
                 {
                     //el buscador se encargo de darnos resultados
@@ -85,7 +108,87 @@ var resultsArea = {
                     //propiedades del json
                     features[i].__detailedText = '<h3>' + features[i].__tipoWFS + '</h3>'
                     features[i].__detailedText += this.proccesObject(features[i]);
+                    
+                    if('posicionEspacial' in features[i])
+                    {
+                        for(var j=0; j<features[i].posicionEspacial.length; j++)
+                        {
+                            geoJSONfeature = {};
+                            geoJSONfeature.type = features[i].__tipoWFS;
+                            geoJSONfeature.properties = {};
+                            geoJSONfeature.properties.info = features[i].__detailedText;
+                            
+                            if('app:geom' in features[i].posicionEspacial[j])
+                            {
+                                if('gml:MultiSurface' in features[i].posicionEspacial[j]['app:geom'][0])
+                                {
+                                    geoJSONfeature.geometry = {
+                                        type: "MultiPolygon", 
+                                        coordinates: 
+                                            gml_MultiSurface2geoJSON_MultiPolygon(
+                                                features[i].posicionEspacial[j]['app:geom'][0]['gml:MultiSurface'][0])
+                                    }
+
+                                    geoJSONfeatureCollection.features[geoJSONfeatureCollection.features.length] = geoJSONfeature;                                    
+                                }
+                                else if('gml:Surface' in features[i].posicionEspacial[j]['app:geom'][0])
+                                {
+                                    geoJSONfeature.geometry = {
+                                        type: "MultiPolygon", 
+                                        coordinates: 
+                                            gml_Surface2geoJSON_MultiPolygon(
+                                                features[i].posicionEspacial[j]['app:geom'][0]['gml:Surface'][0])
+                                    }
+
+                                    geoJSONfeatureCollection.features[geoJSONfeatureCollection.features.length] = geoJSONfeature;                                    
+                                    
+                                }
+                                else if('gml:Curve' in features[i].posicionEspacial[j]['app:geom'][0])
+                                {
+                                    geoJSONfeature.geometry = {
+                                        type: "MultiLineString",
+                                        coordinates: []
+                                    }
+
+                                    for(var k=0; k<features[i].posicionEspacial[j]['app:geom'].length; k++)
+                                    {
+                                        geoJSONfeature.geometry.coordinates = 
+                                            geoJSONfeature.geometry.coordinates.concat(
+                                                gml_Curve2geoJSONMultiLineString(features[i].posicionEspacial[j]['app:geom'][k]['gml:Curve'][0]));
+                                    }
+                                    
+                                    geoJSONfeatureCollection.features[geoJSONfeatureCollection.features.length] = geoJSONfeature;                                    
+                                }
+                            }
+                            else if('gml:Point' in features[i].posicionEspacial[j])
+                            {
+                                geoJSONfeature.geometry = {
+                                    type: "Point", 
+                                    coordinates: 
+                                        gml_Point2geoJSON_Point(features[i].posicionEspacial[j]['gml:Point'][0])
+                                }
+                                
+                                geoJSONfeatureCollection.features[geoJSONfeatureCollection.features.length] = geoJSONfeature;
+                            }
+                            
+                        }
+                        
+                    }
+                    
                     this.resultsDataView.add(features[i]);
+                }
+                
+                vector_layer.addFeatures(geojson_format.read(geoJSONfeatureCollection));
+                //los fenomenos de los wfs tienen las coordenadas en EPSG:4258
+                //a la capa vectorial se han añadido con esas coordenadas pero
+                //esta el mapa en esa proyeccion? si no lo esta transformar.
+                if(srsSrc != srsDest)
+                {
+                    for(var i=0; i<vector_layer.features.length; i++)
+                    {
+                        var feature = vector_layer.features[i];
+                        feature.geometry = feature.geometry.transform(new OpenLayers.Projection(srsSrc), new OpenLayers.Projection(srsDest));
+                    }
                 }
                 
                 if(features.length == 1)
@@ -94,7 +197,6 @@ var resultsArea = {
                     //y mostramos el detalle
                     this.zoomToFeature(features[0]);
                     this.showDetailedText(features[0]);
-                    this.resultsAreaAccordion.cells('b').open();
                 }
             }
             
@@ -102,6 +204,7 @@ var resultsArea = {
 
         showDetailedText: function(feature){
         
+            console.log(feature);
             doc = document.getElementById('detail').contentDocument;
 			if(doc == undefined || doc == null)
             {
@@ -114,6 +217,7 @@ var resultsArea = {
             //doc.write('<a href="javascript:(function(){resultsArea.singleton.resultsAreaAccordion.cells(\'b\').open();})()">Volver a resultados</a><br/>');
 			doc.close();
             
+            this.resultsAreaAccordion.cells('b').open();
         },
         
         zoomToFeature: function(feature){

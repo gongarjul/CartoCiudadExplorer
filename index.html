@@ -35,6 +35,8 @@
     <script src="ign/js/AddLayerDialogsingleton.js"></script>
     <!--Añ¡¤©mos la posibilidad de mostrar resultados-->
     <script src="ign/js/resultsArea.js"></script>
+    <!--Proceso de json de un xml a un geojson-->
+    <script src="ign/js/util.js"></script>
 
     
     <!--Añadimos la posibilidad de hacer un layout-->
@@ -185,7 +187,7 @@
 			map.addLayer(layer);
 			
             map.baseLayer = layer;
-			
+            
             //vlayer = new OpenLayers.Layer.Vector( "Editable" );
             //map.addLayer(vlayer);
             
@@ -243,7 +245,7 @@
             resultados.setWidth('400');
             resultados.hideHeader();
             resultados.fixSize(0,1);
-            resultsArea.singleton.initialize(resultados);
+            resultsArea.singleton.initialize(resultados, map);
 
             var mapa = main_layout.cells('c');
             mapa.hideHeader();

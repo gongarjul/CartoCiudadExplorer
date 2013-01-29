@@ -78,6 +78,7 @@ function changeSRS(map, srsSrc, srsDest) {
     var prjDest = new OpenLayers.Projection(srsDest);
     var options;
     var maxResolution, minResolution;
+    var vectorLayers = [];
     
     //en función del SRS de destino cambiar las opciones del mapa
     //y de cada una de las layers del mapa
@@ -139,6 +140,16 @@ function changeSRS(map, srsSrc, srsDest) {
         map.layers[i].maxResolution = maxResolution;
         map.layers[i].minResolution = minResolution;
         
+        if(map.layers[i] instanceof OpenLayers.Layer.Vector)
+        {
+            for(j=0; j < map.layers[i].features.length; j++)
+            {
+                var feature = map.layers[i].features[j];
+                feature.geometry = feature.geometry.transform(new OpenLayers.Projection(srsSrc), new OpenLayers.Projection(srsDest));
+            }
+            vectorLayers[vectorLayers.length] = map.layers[i];
+        }
+        
     }
     
     punto.transform(prjSrc, prjDest);
@@ -148,6 +159,12 @@ function changeSRS(map, srsSrc, srsDest) {
 	//el caso es que parece que si le indicamos true la zoomPanManage se volvería a ejecutar pero resulta
 	//que es al revés!!!!
     map.setCenter(punto, map.getZoom(), true, true);
+    
+    for(var i = 0; i < vectorLayers.length; i++)
+    {
+        vectorLayers[i].redraw();
+    }
+    
 
 }
 
