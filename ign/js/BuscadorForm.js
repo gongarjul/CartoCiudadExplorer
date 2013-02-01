@@ -12,6 +12,8 @@ var Buscador = {
    
         //referencia a peticiones en curso
         requests: [],
+        //workflows
+        tasks: [],
         
         //eventId necesario para activar desactivar el onOpen del combo
         eventId: null,
@@ -127,6 +129,7 @@ var Buscador = {
 
             });
             
+            /*
             window.setInterval(function(){
 
                 document.getElementById('inProgress').style.visibility =
@@ -134,6 +137,7 @@ var Buscador = {
                 
                 if((new Date()).getTime() - Buscador.singleton.lastKeyAt > 500)
                 {
+
                     for(i=0; i<Buscador.singleton.requests.length; i++)
                     {
                         
@@ -142,8 +146,40 @@ var Buscador = {
                             Buscador.singleton.consultar(i);
                         }
                     }
+                   
                 }
             }, 500);
+            */
+            window.setInterval(function(){
+
+                //por cada x tiempo
+                //1.-- comprobar si hay que mostrar el 'reloj'
+                /*
+                document.getElementById('inProgress').style.visibility =
+                    Buscador.singleton.comprobarPeticionesPendientes()>0?'visible':'hidden';
+                */
+                //2.-- si hace mas de 500 ms desde que se pulso la ultima tecla
+                //      entonces lanzar los workflows
+                if((new Date()).getTime() - Buscador.singleton.lastKeyAt > 500)
+                {
+
+                    for(i=0; i<Buscador.singleton.tasks.length; i++)
+                    {
+                        //arrancar los workflows no iniciados
+                        if(!Buscador.singleton.tasks[i].hasBegan)
+                        {
+                            Buscador.singleton.tasks[i].hasBegan = true;
+                            
+                            Buscador.singleton.tasks[i].workflow.start({
+                                initialValue: Buscador.singleton.tasks[i].initialValue,
+                                callback: function(review){}
+                            });
+                        }
+                    }
+                   
+                }
+            }, 500);
+            
             
         },
 
@@ -183,15 +219,18 @@ var Buscador = {
             //-- la lista de features
             //-- la lista desplegable
             this.cancelarPeticionesPendientes();
+            this.tasks = [];
             this.featureList = [];
             searchCombo.clearAll(false);
 
             this.openCloseList('onKeyPressed');
+            
+            /*
             //si el texto tiene una longitud de 2 y son numeros entonces sera un distrito
             if(texto.length == 2 && texto.search(/[0-9]{2}/) >= 0)
             {
                 //rellenamos combo con distritos
-                this.rellenasearchComboConDistritos(texto);
+                this.distritoLiteralSearch(texto, Buscador.singleton.addSuggestions);
                 
             }
             
@@ -200,18 +239,18 @@ var Buscador = {
             else if(texto.length >= 3 && texto.length < 5 && texto.search(/[0-9]{3,4}/) >= 0)
             {
                 //rellenamos combo por aproximacion con secciones y codigos postales
-                this.rellenasearchComboPorAproximacionConSecciones(texto);
-                this.rellenasearchComboPorAproximacionConCodigosPostales(texto);
+                this.seccionBeginWithSearch(texto, Buscador.singleton.addSuggestions);
+                this.codigoPostalBeginWithSearch(texto, Buscador.singleton.addSuggestions);
             }
             
             //si el texto tiene 5 caracteres y son numeros puede que busque una seccion o un codigo postal
             else if(texto.length == 5 && texto.search(/[0-9]{5}/) >= 0)
             {
                 //rellenamos combo con secciones y codigos postales
-                this.rellenasearchComboConSecciones(texto);
-                this.rellenasearchComboConCodigosPostales(texto);
+                this.seccionLiteralSearch(texto, Buscador.singleton.addSuggestions);
+                this.codigoPostalLiteralSearch(texto, Buscador.singleton.addSuggestions);
             }
-            
+
             //TODO implementar la sugerencia de calles, municipios, provincias y comunidades autonomas
             else if(texto.length >= 3)
             {
@@ -225,17 +264,25 @@ var Buscador = {
                 // si quiere buscar un municipio / provincia / CCAA pondra el nombre no? y si es compuesto? y si para encontrar mejor el municipio pone detras el nombre de la provincia
                 if(texto.search(',') < 0)
                 {
-                    this.rellenasearchComboPorAproximacionConViales(texto);
-                    this.rellenasearchComboPorAproximacionConMunicipios(texto);
-                    this.rellenasearchComboPorAproximacionConProvincias(texto);
-                    this.rellenasearchComboPorAproximacionConComunidadesAutonomas(texto);
+                    //this.vialBeginWithSearch(texto, Buscador.singleton.addSuggestions);
+                    this.municipioBeginWithSearch(texto, Buscador.singleton.addSuggestions);
+                    //this.provinciaBeginWithSearch(texto, Buscador.singleton.addSuggestions);
+                    //this.comunidadAutonomaBeginWithSearch(texto, Buscador.singleton.addSuggestions);
                 }else{
                     this.componentesDireccion(texto);
                 }
             }
+            */
+            if(texto.length >= 3)
+            {
+                var workflow = jWorkflow.order(Buscador.singleton.municipioBeginWithSearch2, Buscador.singleton);
+                workflow.andThen(Buscador.singleton.addSuggestions,Buscador.singleton);
+                
+                this.tasks[this.tasks.length] = {initialValue: texto, workflow: workflow, hasBegan:false};
+            }
         },
   
-        rellenasearchComboConDistritos: function(texto){
+        distritoLiteralSearch: function(texto, callback){
             
             var url = 'http://www.cartociudad.es/wfs-distrito/services?' + 
                 'SERVICE=WFS&' +
@@ -245,10 +292,10 @@ var Buscador = {
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '</Literal></PropertyIsEqualTo></Filter>';
             
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         },
         
-        rellenasearchComboConSecciones: function(texto){
+        seccionLiteralSearch: function(texto, callback){
             
             var url = 'http://www.cartociudad.es/wfs-seccion/services?' + 
                 'SERVICE=WFS&' +
@@ -261,10 +308,10 @@ var Buscador = {
                     '<PropertyIsEqualTo><PropertyName>atributoEntidad/valorAtributo</PropertyName><Literal>' + texto.substring(0,2) + '</Literal></PropertyIsEqualTo>' +
                 '</And></Filter>';
 
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         },
 
-        rellenasearchComboConCodigosPostales: function(texto){
+        codigoPostalLiteralSearch: function(texto, callback){
             
             var url = 'http://www.cartociudad.es/wfs-codigo/services?' + 
                 'SERVICE=WFS&' +
@@ -274,10 +321,10 @@ var Buscador = {
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '</Literal></PropertyIsEqualTo></Filter>';
 
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         },
         
-        rellenasearchComboPorAproximacionConSecciones: function(texto){
+        seccionBeginWithSearch: function(texto, callback){
 
             var txtDistrito = texto.substring(0,2);
             var txtSeccionIncompleta = texto.substring(2,5);
@@ -297,10 +344,10 @@ var Buscador = {
                     '<PropertyIsEqualTo><PropertyName>atributoEntidad/valorAtributo</PropertyName><Literal>' + txtDistrito + '</Literal></PropertyIsEqualTo>' +
                     '</And></Filter>';
 
-           this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+           this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         },
 
-        rellenasearchComboPorAproximacionConCodigosPostales: function(texto){
+        codigoPostalBeginWithSearch: function(texto, callback){
             
             var url = 'http://www.cartociudad.es/wfs-codigo/services?' + 
                 'SERVICE=WFS&' +
@@ -310,10 +357,10 @@ var Buscador = {
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         },
         
-        rellenasearchComboPorAproximacionConViales: function(texto){
+        vialBeginWithSearch: function(texto, callback){
             var url = 'http://www.cartociudad.es/wfs-vial/services?' + 
                 'SERVICE=WFS&' +
                 'VERSION=1.1.0&' +
@@ -322,10 +369,10 @@ var Buscador = {
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         },
 
-        rellenasearchComboPorAproximacionConMunicipios: function(texto){
+        municipioBeginWithSearch: function(texto, callback){
 
             var url = 'http://www.cartociudad.es/wfs-municipio/services?' + 
                 'SERVICE=WFS&' +
@@ -335,10 +382,70 @@ var Buscador = {
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null };
+        },
+
+        municipioLiteralSearch2: function(texto, baton){
+
+            var url = 'http://www.cartociudad.es/wfs-municipio/services?' + 
+                'SERVICE=WFS&' +
+                'VERSION=1.1.0&' +
+                'REQUEST=GetFeature&' +
+                'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
+                'TYPENAME=app:Entidad&' +
+                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
+            
+            var request;
+            
+            if(typeof proxyHost != 'undefined')
+            {
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
+            }
+            
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    baton.pass(loader);
+                }
+            });           
+        },
+
+        municipioBeginWithSearch2: function(texto, baton){
+
+            var url = 'http://www.cartociudad.es/wfs-municipio/services?' + 
+                'SERVICE=WFS&' +
+                'VERSION=1.1.0&' +
+                'REQUEST=GetFeature&' +
+                'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
+                'TYPENAME=app:Entidad&' +
+                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
+            
+            var request;
+            
+            if(typeof proxyHost != 'undefined')
+            {
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
+            }
+            
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    baton.pass(loader);
+                }
+            });           
         },
         
-        rellenasearchComboPorAproximacionConProvincias: function(texto){
+        provinciaBeginWithSearch: function(texto, callback){
 
             var url = 'http://www.cartociudad.es/wfs-provincia/services?' + 
                 'SERVICE=WFS&' +
@@ -348,11 +455,11 @@ var Buscador = {
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         
         },
         
-        rellenasearchComboPorAproximacionConComunidadesAutonomas: function(texto){
+        comunidadAutonomaBeginWithSearch: function(texto, callback){
         
             var url = 'http://www.cartociudad.es/wfs-comunidad/services?' + 
                 'SERVICE=WFS&' +
@@ -362,7 +469,7 @@ var Buscador = {
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
         
         },
 
@@ -392,7 +499,7 @@ var Buscador = {
                     '<PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>entidadLocal/municipio</PropertyName><Literal>' + palabras[1] + '*</Literal></PropertyIsLike>' + 
                     '</And></Filter>';
 
-                this.requests[this.requests.length] = {url: url, dtmlXMLLoader: null};
+                this.requests[this.requests.length] = {url: url, callback: Buscador.singleton.addSuggestions, dtmlXMLLoader: null};
 
                 //var url = 'http://www.cartociudad.es/wfs-vial/services?' + 
                 //'SERVICE=WFS&' +
@@ -414,6 +521,11 @@ var Buscador = {
             
             }
             
+        },
+        
+        
+        diHola: function(){
+            console.log('Hola');
         },
         
         f: function(a){
@@ -446,7 +558,7 @@ var Buscador = {
             }
 
             this.requests[idRequest].dtmlXMLLoader = dhtmlxAjax.get(request,function(loader){
-
+                
                 if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
                 {
                     for(var i=0; i<Buscador.singleton.requests.length; i++)
@@ -459,91 +571,98 @@ var Buscador = {
                         
                     }
 
-                    var features = loader.doXPathMB('//Entidad', null, [{prefix: null, uri:'http://www.idee.es/mne'}]);
-                    for(var i=0; i<features.length;i++)
-                    {
-                        var feature = loader.xmlNodeToJSON(features[i]);
-                    
-                        feature.__tipoWFS = Buscador.singleton.tipoWFS(loader.filePath);                        
-                        //generamos el nombre a mostrar para todos los
-                        //fenomenos a partir de nombreEntidad/nombre
-                        feature.__beautifulName = feature['nombreEntidad'][0]['nombre'][0]._tagvalue.trim();
-                        
-                        if(feature.__tipoWFS == 'DISTRITO_CENSAL')
-                        {
-                            //queremos que el nombre de la seccion sea como 01
-                            //para ello rellenamos a 0 por la izquierda hasta 2,
-                            while(feature.__beautifulName.length < 2)
-                            {
-                                feature.__beautifulName = '0' + feature.__beautifulName;
-                            }
-                        }
-                            
-                        if(feature.__tipoWFS == 'SECCION_CENSAL')
-                        {
-                            //queremos que el nombre de la seccion sea como 01001
-                            //para ello rellenamos a 0 por la izquierda hasta 3,
-                            //el distrito lo obtenemos de atributoEntidad/valorAtributo
-                            //lo añadimos por la izquierda y rellenamos a 0 por
-                            //la izquierda hasta 5
-                            while(feature.__beautifulName.length < 3)
-                            {
-                                feature.__beautifulName = '0' + feature.__beautifulName;
-                            }
-                            
-                            feature.__beautifulName = 
-                                feature['atributoEntidad'][0]['valorAtributo'][0]._tagvalue.trim() +
-                                feature.__beautifulName;
+                    Buscador.singleton.requests[i].callback(loader);
 
-                            while(feature.__beautifulName.length < 5)
-                            {
-                                feature.__beautifulName = '0' + feature.__beautifulName;
-                            }  
-                        }                        
-
-                        //a�adimos opciones a la lista
-                        //-- todos llevaran el nombre
-                        //-- distrito, seccion y codigo llevaran el municipio
-                        //-- distrito, seccion, codigo y municipio llevaran provincia
-                        //-- todos llevaran el tipo
-
-                        //a�adimos feature a la lista desplegable
-                        var txtOpcion = feature.__beautifulName;
-                        
-                        if(feature.__tipoWFS == 'DISTRITO_CENSAL' ||
-                            feature.__tipoWFS == 'SECCION_CENSAL' ||
-                            feature.__tipoWFS == 'CODIGO_POSTAL' ||
-                            feature.__tipoWFS == 'VIAL')
-                        {
-                            txtOpcion = txtOpcion + ' en ' + feature['entidadLocal'][0]['municipio'][0]._tagvalue;
-                        }
-                        
-                        if(feature.__tipoWFS == 'DISTRITO_CENSAL' ||
-                            feature.__tipoWFS == 'SECCION_CENSAL' ||
-                            feature.__tipoWFS == 'CODIGO_POSTAL' ||
-                            feature.__tipoWFS == 'VIAL' ||
-                            feature.__tipoWFS == 'MUNICIPIO')
-                        {
-                            txtOpcion = txtOpcion + ' (' + feature['entidadLocal'][0]['provincia'][0]._tagvalue + ')';
-                        }
-                        
-                        txtOpcion = txtOpcion + ' [tipo:' + feature.__tipoWFS + ']'
-                        
-                        //TODO comparar con el texto para hacer negrita problema cuando llega a espacios en blanco
-                        //tiene que coincidir exacto o hacerlo por indices
-                        var searchCombo = Buscador.singleton.searchForm.getCombo('searchCombo');
-                        /*
-                        var texto = searchCombo.getComboText();                        
-                        var inicio = 0;
-                        var final = inicio + texto.length;
-                        txtOpcion = txtOpcion.substring(0,inicio) + '<mark>' + txtOpcion.substring(inicio, final) + '</mark>' + txtOpcion.substring(final);
-                        */
-                        searchCombo.addOption(feature.__tipoWFS + '.' + i, txtOpcion);
-                        Buscador.singleton.featureList[feature.__tipoWFS + '.' + i] = feature;
-                    }
                 }
             });
+            
+        },
 
+        addSuggestions: function(loader){
+        
+            var features = loader.doXPathMB('//Entidad', null, [{prefix: null, uri:'http://www.idee.es/mne'}]);
+            for(var i=0; i<features.length;i++)
+            {
+                var feature = loader.xmlNodeToJSON(features[i]);
+            
+                feature.__tipoWFS = Buscador.singleton.tipoWFS(loader.filePath);                        
+                //generamos el nombre a mostrar para todos los
+                //fenomenos a partir de nombreEntidad/nombre
+                feature.__beautifulName = feature['nombreEntidad'][0]['nombre'][0]._tagvalue.trim();
+                
+                if(feature.__tipoWFS == 'DISTRITO_CENSAL')
+                {
+                    //queremos que el nombre de la seccion sea como 01
+                    //para ello rellenamos a 0 por la izquierda hasta 2,
+                    while(feature.__beautifulName.length < 2)
+                    {
+                        feature.__beautifulName = '0' + feature.__beautifulName;
+                    }
+                }
+                    
+                if(feature.__tipoWFS == 'SECCION_CENSAL')
+                {
+                    //queremos que el nombre de la seccion sea como 01001
+                    //para ello rellenamos a 0 por la izquierda hasta 3,
+                    //el distrito lo obtenemos de atributoEntidad/valorAtributo
+                    //lo añadimos por la izquierda y rellenamos a 0 por
+                    //la izquierda hasta 5
+                    while(feature.__beautifulName.length < 3)
+                    {
+                        feature.__beautifulName = '0' + feature.__beautifulName;
+                    }
+                    
+                    feature.__beautifulName = 
+                        feature['atributoEntidad'][0]['valorAtributo'][0]._tagvalue.trim() +
+                        feature.__beautifulName;
+
+                    while(feature.__beautifulName.length < 5)
+                    {
+                        feature.__beautifulName = '0' + feature.__beautifulName;
+                    }  
+                }                        
+
+                //a�adimos opciones a la lista
+                //-- todos llevaran el nombre
+                //-- distrito, seccion y codigo llevaran el municipio
+                //-- distrito, seccion, codigo y municipio llevaran provincia
+                //-- todos llevaran el tipo
+
+                //a�adimos feature a la lista desplegable
+                var txtOpcion = feature.__beautifulName;
+                
+                if(feature.__tipoWFS == 'DISTRITO_CENSAL' ||
+                    feature.__tipoWFS == 'SECCION_CENSAL' ||
+                    feature.__tipoWFS == 'CODIGO_POSTAL' ||
+                    feature.__tipoWFS == 'VIAL')
+                {
+                    txtOpcion = txtOpcion + ' en ' + feature['entidadLocal'][0]['municipio'][0]._tagvalue;
+                }
+                
+                if(feature.__tipoWFS == 'DISTRITO_CENSAL' ||
+                    feature.__tipoWFS == 'SECCION_CENSAL' ||
+                    feature.__tipoWFS == 'CODIGO_POSTAL' ||
+                    feature.__tipoWFS == 'VIAL' ||
+                    feature.__tipoWFS == 'MUNICIPIO')
+                {
+                    txtOpcion = txtOpcion + ' (' + feature['entidadLocal'][0]['provincia'][0]._tagvalue + ')';
+                }
+                
+                txtOpcion = txtOpcion + ' [tipo:' + feature.__tipoWFS + ']'
+                
+                //TODO comparar con el texto para hacer negrita problema cuando llega a espacios en blanco
+                //tiene que coincidir exacto o hacerlo por indices
+                var searchCombo = Buscador.singleton.searchForm.getCombo('searchCombo');
+                /*
+                var texto = searchCombo.getComboText();                        
+                var inicio = 0;
+                var final = inicio + texto.length;
+                txtOpcion = txtOpcion.substring(0,inicio) + '<mark>' + txtOpcion.substring(inicio, final) + '</mark>' + txtOpcion.substring(final);
+                */
+                searchCombo.addOption(feature.__tipoWFS + '.' + i, txtOpcion);
+                Buscador.singleton.featureList[feature.__tipoWFS + '.' + i] = feature;
+            }
+            
         },
         
         cancelarPeticionesPendientes: function(){
