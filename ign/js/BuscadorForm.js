@@ -10,10 +10,8 @@ var Buscador = {
         //referencia a formulario dhtmlx
         searchForm: null,
    
-        //referencia a peticiones en curso
-        requests: [],
-        //workflows
-        tasks: [],
+        //jobs
+        jobs: [],
         
         //eventId necesario para activar desactivar el onOpen del combo
         eventId: null,
@@ -102,7 +100,6 @@ var Buscador = {
             
             searchCombo.attachEvent('onChange', function(){
 
-                //parece que hay unproblema con el uso 
                 //this se refiere a searchCombo
                 var idListOption = this.getSelectedValue();
                 
@@ -114,6 +111,7 @@ var Buscador = {
                     //mandar el resultado al resultsArea
                     if(resultsArea.singleton)
                     {
+                        //borra el area
                         resultsArea.singleton.clearAll();
                         
                         //mandamos a la ventana de resultados
@@ -124,56 +122,35 @@ var Buscador = {
                 }
                 else
                 {
-                    //console.log('quiero buscar ya');
+                    //TODO falta implementar que el usuario no seleccione
+                    //una opcion si no que pulse enter o ¿salga del control?
+                    
                 }
 
             });
             
-            /*
-            window.setInterval(function(){
-
-                document.getElementById('inProgress').style.visibility =
-                    Buscador.singleton.comprobarPeticionesPendientes()>0?'visible':'hidden';
-                
-                if((new Date()).getTime() - Buscador.singleton.lastKeyAt > 500)
-                {
-
-                    for(i=0; i<Buscador.singleton.requests.length; i++)
-                    {
-                        
-                        if(!Buscador.singleton.requests[i].dtmlXMLLoader)
-                        {
-                            Buscador.singleton.consultar(i);
-                        }
-                    }
-                   
-                }
-            }, 500);
-            */
             window.setInterval(function(){
 
                 //por cada x tiempo
                 //1.-- comprobar si hay que mostrar el 'reloj'
-                /*
+
                 document.getElementById('inProgress').style.visibility =
-                    Buscador.singleton.comprobarPeticionesPendientes()>0?'visible':'hidden';
-                */
+                    Buscador.singleton.checkJobs()>0?'visible':'hidden';
+
                 //2.-- si hace mas de 500 ms desde que se pulso la ultima tecla
                 //      entonces lanzar los workflows
                 if((new Date()).getTime() - Buscador.singleton.lastKeyAt > 500)
                 {
 
-                    for(i=0; i<Buscador.singleton.tasks.length; i++)
+                    for(i=0; i<Buscador.singleton.jobs.length; i++)
                     {
-                        //arrancar los workflows no iniciados
-                        if(!Buscador.singleton.tasks[i].hasBegan)
+                        //start workflows with status = 0 (created)
+                        if(Buscador.singleton.jobs[i].status == 0)
                         {
-                            Buscador.singleton.tasks[i].hasBegan = true;
-                            
-                            Buscador.singleton.tasks[i].workflow.start({
-                                initialValue: Buscador.singleton.tasks[i].initialValue,
-                                callback: function(review){}
-                            });
+                            //change status (1 started)
+                            Buscador.singleton.jobs[i].status = 1;
+                            //at the end chage status (2 finish)
+                            Buscador.singleton.jobs[i].workflow.start(Buscador.singleton.jobs[i].startOptions);
                         }
                     }
                    
@@ -218,71 +195,30 @@ var Buscador = {
             //-- borramos las anteriores
             //-- la lista de features
             //-- la lista desplegable
-            this.cancelarPeticionesPendientes();
-            this.tasks = [];
+            this.cancelRunningJobs();
+            this.jobs = [];
             this.featureList = [];
             searchCombo.clearAll(false);
 
             this.openCloseList('onKeyPressed');
             
-            /*
-            //si el texto tiene una longitud de 2 y son numeros entonces sera un distrito
-            if(texto.length == 2 && texto.search(/[0-9]{2}/) >= 0)
-            {
-                //rellenamos combo con distritos
-                this.distritoLiteralSearch(texto, Buscador.singleton.addSuggestions);
-                
-            }
+            var components = texto.split(/[,]/);
             
-            //si el texto tiene 3 o 4 caracteres y son num�ricos
-            //puede que este buscando distritos o codigos postales por aproximaci�n
-            else if(texto.length >= 3 && texto.length < 5 && texto.search(/[0-9]{3,4}/) >= 0)
+            if(components.length ==1)
             {
-                //rellenamos combo por aproximacion con secciones y codigos postales
-                this.seccionBeginWithSearch(texto, Buscador.singleton.addSuggestions);
-                this.codigoPostalBeginWithSearch(texto, Buscador.singleton.addSuggestions);
-            }
-            
-            //si el texto tiene 5 caracteres y son numeros puede que busque una seccion o un codigo postal
-            else if(texto.length == 5 && texto.search(/[0-9]{5}/) >= 0)
-            {
-                //rellenamos combo con secciones y codigos postales
-                this.seccionLiteralSearch(texto, Buscador.singleton.addSuggestions);
-                this.codigoPostalLiteralSearch(texto, Buscador.singleton.addSuggestions);
+                this.singleComponentSearch(components[0].trim());
             }
 
-            //TODO implementar la sugerencia de calles, municipios, provincias y comunidades autonomas
-            else if(texto.length >= 3)
-            {
-                //lo ideal ser�a rellenar el combo por aproximaci�n hasta encontrar varias palabras
-                //como separar las palabras? split con patron /[ ,]
-                //como identificar cada parte de la posible direccion? los municipios van al principio o al final
-                //si es una direccion la mayoria de la gente pondra el nombre de la calle primero y despues y en cualquier orden
-                // CP suele ser lo ultimo?
-                // municipio y provincia penultimo?
-                // numero de policia se omite?
-                // si quiere buscar un municipio / provincia / CCAA pondra el nombre no? y si es compuesto? y si para encontrar mejor el municipio pone detras el nombre de la provincia
-                if(texto.search(',') < 0)
-                {
-                    //this.vialBeginWithSearch(texto, Buscador.singleton.addSuggestions);
-                    this.municipioBeginWithSearch(texto, Buscador.singleton.addSuggestions);
-                    //this.provinciaBeginWithSearch(texto, Buscador.singleton.addSuggestions);
-                    //this.comunidadAutonomaBeginWithSearch(texto, Buscador.singleton.addSuggestions);
-                }else{
-                    this.componentesDireccion(texto);
-                }
-            }
-            */
-            if(texto.length >= 3)
-            {
-                var workflow = jWorkflow.order(Buscador.singleton.municipioBeginWithSearch2, Buscador.singleton);
-                workflow.andThen(Buscador.singleton.addSuggestions,Buscador.singleton);
-                
-                this.tasks[this.tasks.length] = {initialValue: texto, workflow: workflow, hasBegan:false};
-            }
         },
   
-        distritoLiteralSearch: function(texto, callback){
+        distritoLiteralSearch: function(data, baton){
+        
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+
+            var __buscador = Buscador.singleton;
             
             var url = 'http://www.cartociudad.es/wfs-distrito/services?' + 
                 'SERVICE=WFS&' +
@@ -290,49 +226,44 @@ var Buscador = {
                 'REQUEST=GetFeature&' +
                 'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
                 'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '</Literal></PropertyIsEqualTo></Filter>';
+                'FILTER=<Filter><PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.distritoText + '</Literal></PropertyIsEqualTo></Filter>';
             
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
-        },
-        
-        seccionLiteralSearch: function(texto, callback){
-            
-            var url = 'http://www.cartociudad.es/wfs-seccion/services?' + 
-                'SERVICE=WFS&' +
-                'VERSION=1.1.0&' +
-                'REQUEST=GetFeature&' +
-                'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
-                'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><And>' +
-                    '<PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto.substring(2,5) + '</Literal></PropertyIsEqualTo>' +
-                    '<PropertyIsEqualTo><PropertyName>atributoEntidad/valorAtributo</PropertyName><Literal>' + texto.substring(0,2) + '</Literal></PropertyIsEqualTo>' +
-                '</And></Filter>';
-
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
-        },
-
-        codigoPostalLiteralSearch: function(texto, callback){
-            
-            var url = 'http://www.cartociudad.es/wfs-codigo/services?' + 
-                'SERVICE=WFS&' +
-                'VERSION=1.1.0&' +
-                'REQUEST=GetFeature&' +
-                'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
-                'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '</Literal></PropertyIsEqualTo></Filter>';
-
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
-        },
-        
-        seccionBeginWithSearch: function(texto, callback){
-
-            var txtDistrito = texto.substring(0,2);
-            var txtSeccionIncompleta = texto.substring(2,5);
-            while(txtSeccionIncompleta.length < 5)
+            if(typeof proxyHost != 'undefined')
             {
-                txtSeccionIncompleta = txtSeccionIncompleta + '_';
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
             }
             
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    var distritos = __buscador.loaderXML2JSON(loader);
+                    if(distritos.length > 0)
+                    {
+                        if(!data.distritos)
+                        {
+                            data.distritos = [];
+                        }
+                        data.distritos = data.distritos.concat(distritos);
+                    }
+                }
+                baton.pass(data)
+            });           
+        },
+
+        seccionLiteralSearch: function(data, baton){
+
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+        
+            var __buscador = Buscador.singleton;
+            
             var url = 'http://www.cartociudad.es/wfs-seccion/services?' + 
                 'SERVICE=WFS&' +
                 'VERSION=1.1.0&' +
@@ -340,14 +271,45 @@ var Buscador = {
                 'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
                 'TYPENAME=app:Entidad&' +
                 'FILTER=<Filter><And>' +
-                    '<PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + txtSeccionIncompleta + '</Literal></PropertyIsLike>' +
-                    '<PropertyIsEqualTo><PropertyName>atributoEntidad/valorAtributo</PropertyName><Literal>' + txtDistrito + '</Literal></PropertyIsEqualTo>' +
-                    '</And></Filter>';
+                    '<PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.seccionText.substring(2,5) + '</Literal></PropertyIsEqualTo>' +
+                    '<PropertyIsEqualTo><PropertyName>atributoEntidad/valorAtributo</PropertyName><Literal>' + data.seccionText.substring(0,2) + '</Literal></PropertyIsEqualTo>' +
+                '</And></Filter>';
 
-           this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
+            if(typeof proxyHost != 'undefined')
+            {
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
+            }
+            
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    var secciones = __buscador.loaderXML2JSON(loader);
+                    if(secciones.length > 0)
+                    {
+                        if(!data.secciones)
+                        {
+                            data.secciones = [];
+                        }
+                        data.secciones = data.secciones.concat(secciones);
+                    }
+                }
+                baton.pass(data)
+            });           
         },
 
-        codigoPostalBeginWithSearch: function(texto, callback){
+        codigoLiteralSearch: function(data, baton){
+
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+        
+            var __buscador = Buscador.singleton;
             
             var url = 'http://www.cartociudad.es/wfs-codigo/services?' + 
                 'SERVICE=WFS&' +
@@ -355,46 +317,52 @@ var Buscador = {
                 'REQUEST=GetFeature&' +
                 'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
                 'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
+                'FILTER=<Filter><PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.codigoText + '</Literal></PropertyIsEqualTo></Filter>';
 
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
+            if(typeof proxyHost != 'undefined')
+            {
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
+            }
+            
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    var codigos = __buscador.loaderXML2JSON(loader);
+                    if(codigos.length > 0)
+                    {
+                        if(!data.codigos)
+                        {
+                            data.codigos = [];
+                        }
+                        data.codigos = data.codigos.concat(codigos);
+                    }
+                }
+                baton.pass(data)
+            });           
         },
         
-        vialBeginWithSearch: function(texto, callback){
+        vialBeginWithSearch: function(data, baton){
+        
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+        
+            var __buscador = Buscador.singleton;
+            
             var url = 'http://www.cartociudad.es/wfs-vial/services?' + 
                 'SERVICE=WFS&' +
                 'VERSION=1.1.0&' +
                 'REQUEST=GetFeature&' +
                 'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
                 'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
+                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.vialText + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
-        },
-
-        municipioBeginWithSearch: function(texto, callback){
-
-            var url = 'http://www.cartociudad.es/wfs-municipio/services?' + 
-                'SERVICE=WFS&' +
-                'VERSION=1.1.0&' +
-                'REQUEST=GetFeature&' +
-                'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
-                'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
-
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null };
-        },
-
-        municipioLiteralSearch2: function(texto, baton){
-
-            var url = 'http://www.cartociudad.es/wfs-municipio/services?' + 
-                'SERVICE=WFS&' +
-                'VERSION=1.1.0&' +
-                'REQUEST=GetFeature&' +
-                'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
-                'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
-            
             var request;
             
             if(typeof proxyHost != 'undefined')
@@ -410,20 +378,36 @@ var Buscador = {
                 
                 if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
                 {
-                    baton.pass(loader);
+                    var viales = __buscador.loaderXML2JSON(loader);
+                    if(viales.length > 0)
+                    {
+                        if(!data.viales)
+                        {
+                            data.viales = [];
+                        }
+                        data.viales = data.viales.concat(viales);
+                    }
                 }
+                baton.pass(data)
             });           
         },
 
-        municipioBeginWithSearch2: function(texto, baton){
-
+        municipioLiteralSearch: function(data, baton){
+            
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+            
+            var __buscador = Buscador.singleton;
+            
             var url = 'http://www.cartociudad.es/wfs-municipio/services?' + 
                 'SERVICE=WFS&' +
                 'VERSION=1.1.0&' +
                 'REQUEST=GetFeature&' +
                 'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
                 'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
+                'FILTER=<Filter><PropertyIsEqualTo><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.municipioText + '</Literal></PropertyIsEqualTo></Filter>';
             
             var request;
             
@@ -440,37 +424,175 @@ var Buscador = {
                 
                 if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
                 {
-                    baton.pass(loader);
+                    var municipios = __buscador.loaderXML2JSON(loader);
+                    if(municipios.length > 0)
+                    {
+                        if(!data.municipios)
+                        {
+                            data.municipios = [];
+                        }
+                        data.municipios = data.municipios.concat(municipios);
+                    }
                 }
+                baton.pass(data)
+            });           
+        },
+
+        municipioBeginWithSearch: function(data, baton){
+
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+
+            var __buscador = Buscador.singleton;
+            
+            var url = 'http://www.cartociudad.es/wfs-municipio/services?' + 
+                'SERVICE=WFS&' +
+                'VERSION=1.1.0&' +
+                'REQUEST=GetFeature&' +
+                'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
+                'TYPENAME=app:Entidad&' +
+                'FILTER=<Filter>';
+            
+            if('municipios' in data && data.municipios.length > 0)
+            {
+                url += '<And>';
+                
+                for(var i=0; i<data.municipios.length; i++)
+                {
+                    url += '<PropertyIsNotEqualTo><PropertyName>codigoINE</PropertyName><Literal>' + data.municipios[i]['codigoINE'][0]._tagvalue + '</Literal></PropertyIsNotEqualTo>';
+                }
+            }
+                
+            url += '<PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.municipioText + '*</Literal></PropertyIsLike>';
+
+            if('municipios' in data && data.municipios.length > 0)
+            {
+                url += '</And>';
+            }
+            
+            url += '</Filter>';
+            
+            var request;
+            
+            if(typeof proxyHost != 'undefined')
+            {
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
+            }
+            
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    var municipios = __buscador.loaderXML2JSON(loader);
+                    if(municipios.length > 0)
+                    {
+                        if(!data.municipios)
+                        {
+                            data.municipios = [];
+                        }
+                        data.municipios = data.municipios.concat(municipios);
+                    }
+                }
+                baton.pass(data);
             });           
         },
         
-        provinciaBeginWithSearch: function(texto, callback){
+        provinciaBeginWithSearch: function(data, baton){
 
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+
+            var __buscador = Buscador.singleton;
+            
             var url = 'http://www.cartociudad.es/wfs-provincia/services?' + 
                 'SERVICE=WFS&' +
                 'VERSION=1.1.0&' +
                 'REQUEST=GetFeature&' +
                 'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
                 'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
+                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.provinciaText + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
-        
+            var request;
+            
+            if(typeof proxyHost != 'undefined')
+            {
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
+            }
+            
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    var provincias = __buscador.loaderXML2JSON(loader);
+                    if(provincias.length > 0)
+                    {
+                        if(!data.provincias)
+                        {
+                            data.provincias = [];
+                        }
+                        data.provincias = data.provincias.concat(provincias);
+                    }
+                }
+                baton.pass(data)
+            });           
         },
         
-        comunidadAutonomaBeginWithSearch: function(texto, callback){
-        
+        comunidadAutonomaBeginWithSearch: function(data, baton){
+            
+            if(this.forceStop)
+            {
+                baton.drop();return;
+            }
+
+            var __buscador = Buscador.singleton;
+            
             var url = 'http://www.cartociudad.es/wfs-comunidad/services?' + 
                 'SERVICE=WFS&' +
                 'VERSION=1.1.0&' +
                 'REQUEST=GetFeature&' +
                 'NAMESPACE=xmlns(app=http://www.deegree.org/app)&' +
                 'TYPENAME=app:Entidad&' +
-                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + texto + '*</Literal></PropertyIsLike></Filter>';
+                'FILTER=<Filter><PropertyIsLike wildCard="*" singleChar="_" escapeChar="!"><PropertyName>nombreEntidad/nombre</PropertyName><Literal>' + data.comunidadText + '*</Literal></PropertyIsLike></Filter>';
 
-            this.requests[this.requests.length] = {url: url, callback: callback, dtmlXMLLoader: null};
-        
+            var request;
+            
+            if(typeof proxyHost != 'undefined')
+            {
+                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(url);
+            }else{
+                request = url;
+            }
+            
+            baton.take()
+
+            dhtmlxAjax.get(request,function(loader){
+                
+                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
+                {
+                    var comunidades = __buscador.loaderXML2JSON(loader);
+                    if(comunidades.length > 0)
+                    {
+                        if(!data.comunidades)
+                        {
+                            data.comunidades = [];
+                        }
+                        data.comunidades = data.comunidades.concat(comunidades);
+                    }
+                }
+                baton.pass(data)
+            });           
         },
 
         componentesDireccion: function(texto){
@@ -523,11 +645,6 @@ var Buscador = {
             
         },
         
-        
-        diHola: function(){
-            console.log('Hola');
-        },
-        
         f: function(a){
             if(!a) return [[1]];
             var b = [];
@@ -546,46 +663,182 @@ var Buscador = {
             return b;
         },
             
-        consultar: function(idRequest){
-            
-            var request;
-            
-            if(typeof proxyHost != 'undefined')
+        singleComponentSearch: function(text){
+            //no es logico buscar con un solo componente:
+            //  - distritos
+            //  - secciones
+            //  - portales
+            /*
+            //si el texto tiene una longitud de 2 y son numeros entonces sera un distrito
+            if(texto.length == 2 && texto.search(/[0-9]{2}/) >= 0)
             {
-                request = proxyHost + '?' + proxyHostOptions + '&url=' + encodeURIComponent(this.requests[idRequest].url);
-            }else{
-                request = this.requests[idRequest].url;
-            }
-
-            this.requests[idRequest].dtmlXMLLoader = dhtmlxAjax.get(request,function(loader){
+                //rellenamos combo con distritos
+                this.distritoLiteralSearch(texto, Buscador.singleton.addSuggestions);
                 
-                if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
-                {
-                    for(var i=0; i<Buscador.singleton.requests.length; i++)
-                    {
-                        if(loader.filePath == Buscador.singleton.requests[i].dtmlXMLLoader.filePath)
-                        {
-                            console.log('id.' + i + ' WFS ' + Buscador.singleton.tipoWFS(Buscador.singleton.requests[i].dtmlXMLLoader.filePath) + ' readyState: complete, status:' + Buscador.singleton.requests[i].dtmlXMLLoader.xmlDoc.status + ' ' + Buscador.singleton.requests[i].dtmlXMLLoader.xmlDoc.statusText);
-                            break;
-                        }
-                        
-                    }
-
-                    Buscador.singleton.requests[i].callback(loader);
-
-                }
-            });
+            }
             
+            //si el texto tiene 3 o 4 caracteres y son num�ricos
+            //puede que este buscando distritos o codigos postales por aproximaci�n
+            else if(texto.length >= 3 && texto.length < 5 && texto.search(/[0-9]{3,4}/) >= 0)
+            {
+                //rellenamos combo por aproximacion con secciones y codigos postales
+                this.seccionBeginWithSearch(texto, Buscador.singleton.addSuggestions);
+                this.codigoPostalBeginWithSearch(texto, Buscador.singleton.addSuggestions);
+            }
+            */
+            
+            //si el texto tiene 5 caracteres y son numeros la busqueda será de codigo postal
+            if(texto.length == 5 && texto.search(/[0-9]{5}/) >= 0)
+            {
+                //rellenamos combo con codigos postales
+                var job = { 
+                    startOptions: {
+                        initialValue: { codigoText: texto },
+                        callback: function(review){
+                            //this se refiere al objeto:
+                            //{initialValue, status, workflow}
+                            if(this.forceStop)
+                            {
+                                this.status = -1;
+                            }
+                            else
+                            {
+                                this.status = 2;
+                                if('codigos' in review)
+                                {
+                                    Buscador.singleton.addSuggestions(review.codigos);
+                                }
+                            }
+                        }, 
+                    },
+                    status: 0 
+                };
+                job.startOptions.context = job;
+                job.workflow = jWorkflow.order(this.codigoLiteralSearch, job);
+                this.jobs[this.jobs.length] = job;
+            }
+            else if(texto.length >= 3)
+            {
+                //encontrar municipios
+                var job = { 
+                    startOptions: {
+                        initialValue: { municipioText: texto },
+                        callback: function(review){
+                            //this se refiere al objeto:
+                            //{initialValue, status, workflow}
+                            if(this.forceStop)
+                            {
+                                this.status = -1;
+                            }
+                            else
+                            {
+                                this.status = 2;
+                                if('municipios' in review)
+                                {
+                                    Buscador.singleton.addSuggestions(review.municipios);
+                                }
+                            }
+                        }, 
+                    },
+                    status: 0 
+                };
+                job.startOptions.context = job;
+                job.workflow = jWorkflow.order(this.municipioLiteralSearch, job).andThen(this.municipioBeginWithSearch, job);
+                this.jobs[this.jobs.length] = job;
+
+                //encontrar provincias
+                job = { 
+                    startOptions: {
+                        initialValue: { provinciaText: texto },
+                        callback: function(review){
+                            //this se refiere al objeto:
+                            //{initialValue, status, workflow}
+                            if(this.forceStop)
+                            {
+                                this.status = -1;
+                            }
+                            else
+                            {
+                                this.status = 2;
+                                if('provincias' in review)
+                                {
+                                    Buscador.singleton.addSuggestions(review.provincias);
+                                }
+                            }
+                        }, 
+                    },
+                    status: 0 
+                };
+                job.startOptions.context = job;
+                job.workflow = jWorkflow.order(this.provinciaBeginWithSearch, job);
+                this.jobs[this.jobs.length] = job;
+                
+                //encontrar comunidades
+                job = { 
+                    startOptions: {
+                        initialValue: { comunidadText: texto },
+                        callback: function(review){
+                            //this se refiere al objeto:
+                            //{initialValue, status, workflow}
+                            if(this.forceStop)
+                            {
+                                this.status = -1;
+                            }
+                            else
+                            {
+                                this.status = 2;
+                                if('comunidades' in review)
+                                {
+                                    Buscador.singleton.addSuggestions(review.comunidades);
+                                }
+                            }
+                        }, 
+                    },
+                    status: 0 
+                };
+                job.startOptions.context = job;
+                job.workflow = jWorkflow.order(this.comunidadAutonomaBeginWithSearch, job);
+                this.jobs[this.jobs.length] = job;
+                
+                //encontrar viales
+                job = { 
+                    startOptions: {
+                        initialValue: { vialText: texto },
+                        callback: function(review){
+                            //this se refiere al objeto:
+                            //{initialValue, status, workflow}
+                            if(this.forceStop)
+                            {
+                                this.status = -1;
+                            }
+                            else
+                            {
+                                this.status = 2;
+                                if('viales' in review)
+                                {
+                                    Buscador.singleton.addSuggestions(review.viales);
+                                }
+                            }
+                        }, 
+                    },
+                    status: 0 
+                };
+                job.startOptions.context = job;
+                job.workflow = jWorkflow.order(this.vialBeginWithSearch, job);
+                this.jobs[this.jobs.length] = job;
+                
+            }            
+        
         },
 
-        addSuggestions: function(loader){
+        loaderXML2JSON: function(loader){
         
             var features = loader.doXPathMB('//Entidad', null, [{prefix: null, uri:'http://www.idee.es/mne'}]);
             for(var i=0; i<features.length;i++)
             {
                 var feature = loader.xmlNodeToJSON(features[i]);
             
-                feature.__tipoWFS = Buscador.singleton.tipoWFS(loader.filePath);                        
+                feature.__tipoWFS = this.tipoWFS(loader.filePath);                        
                 //generamos el nombre a mostrar para todos los
                 //fenomenos a partir de nombreEntidad/nombre
                 feature.__beautifulName = feature['nombreEntidad'][0]['nombre'][0]._tagvalue.trim();
@@ -620,8 +873,18 @@ var Buscador = {
                     {
                         feature.__beautifulName = '0' + feature.__beautifulName;
                     }  
-                }                        
+                }   
 
+                features[i] = feature;
+            }
+            
+            return features;
+        },
+        
+        addSuggestions: function(features){
+
+            for(var i=0; i<features.length; i++)
+            {
                 //a�adimos opciones a la lista
                 //-- todos llevaran el nombre
                 //-- distrito, seccion y codigo llevaran el municipio
@@ -629,90 +892,71 @@ var Buscador = {
                 //-- todos llevaran el tipo
 
                 //a�adimos feature a la lista desplegable
-                var txtOpcion = feature.__beautifulName;
+                var txtOpcion = features[i].__beautifulName;
                 
-                if(feature.__tipoWFS == 'DISTRITO_CENSAL' ||
-                    feature.__tipoWFS == 'SECCION_CENSAL' ||
-                    feature.__tipoWFS == 'CODIGO_POSTAL' ||
-                    feature.__tipoWFS == 'VIAL')
+                if(features[i].__tipoWFS == 'DISTRITO_CENSAL' ||
+                    features[i].__tipoWFS == 'SECCION_CENSAL' ||
+                    features[i].__tipoWFS == 'CODIGO_POSTAL' ||
+                    features[i].__tipoWFS == 'VIAL')
                 {
-                    txtOpcion = txtOpcion + ' en ' + feature['entidadLocal'][0]['municipio'][0]._tagvalue;
+                    txtOpcion = txtOpcion + ' en ' + features[i]['entidadLocal'][0]['municipio'][0]._tagvalue;
                 }
                 
-                if(feature.__tipoWFS == 'DISTRITO_CENSAL' ||
-                    feature.__tipoWFS == 'SECCION_CENSAL' ||
-                    feature.__tipoWFS == 'CODIGO_POSTAL' ||
-                    feature.__tipoWFS == 'VIAL' ||
-                    feature.__tipoWFS == 'MUNICIPIO')
+                if(features[i].__tipoWFS == 'DISTRITO_CENSAL' ||
+                    features[i].__tipoWFS == 'SECCION_CENSAL' ||
+                    features[i].__tipoWFS == 'CODIGO_POSTAL' ||
+                    features[i].__tipoWFS == 'VIAL' ||
+                    features[i].__tipoWFS == 'MUNICIPIO')
                 {
-                    txtOpcion = txtOpcion + ' (' + feature['entidadLocal'][0]['provincia'][0]._tagvalue + ')';
+                    txtOpcion = txtOpcion + ' (' + features[i]['entidadLocal'][0]['provincia'][0]._tagvalue + ')';
                 }
                 
-                txtOpcion = txtOpcion + ' [tipo:' + feature.__tipoWFS + ']'
-                
-                //TODO comparar con el texto para hacer negrita problema cuando llega a espacios en blanco
-                //tiene que coincidir exacto o hacerlo por indices
-                var searchCombo = Buscador.singleton.searchForm.getCombo('searchCombo');
-                /*
-                var texto = searchCombo.getComboText();                        
-                var inicio = 0;
-                var final = inicio + texto.length;
-                txtOpcion = txtOpcion.substring(0,inicio) + '<mark>' + txtOpcion.substring(inicio, final) + '</mark>' + txtOpcion.substring(final);
-                */
-                searchCombo.addOption(feature.__tipoWFS + '.' + i, txtOpcion);
-                Buscador.singleton.featureList[feature.__tipoWFS + '.' + i] = feature;
+                txtOpcion = txtOpcion + ' [tipo:' + features[i].__tipoWFS + ']'
+            
+                var searchCombo = this.searchForm.getCombo('searchCombo');
+                searchCombo.addOption(features[i].__tipoWFS + '.' + i, txtOpcion);
+                this.featureList[features[i].__tipoWFS + '.' + i] = features[i];
             }
             
         },
         
-        cancelarPeticionesPendientes: function(){
+        cancelRunningJobs: function(){
 
             //cancelar peticiones pendientes
-            for(var i=0; i<this.requests.length; i++)
+            for(var i=0; i<this.jobs.length; i++)
             {
-                if(this.requests[i].dtmlXMLLoader)
-                {
-                    this.requests[i].dtmlXMLLoader.xmlDoc.abort();
-                }
+                this.jobs[i].forceStop = true;
             }
-            this.requests = [];
+            
         
         },
         
-        comprobarPeticionesPendientes: function(){
+        checkJobs: function(){
             
-            var contadorSinInicializar = 0;
-            var contadorFinalizadas = 0;
-            for(var i=0; i<Buscador.singleton.requests.length; i++)
+            var waitingToStart = 0;
+            var running = 0;
+            var finished = 0;
+            
+            for(var i=0; i<this.jobs.length; i++)
             {
-                if(Buscador.singleton.requests[i].dtmlXMLLoader)
+                switch(this.jobs[i].status)
                 {
-                    switch(Buscador.singleton.requests[i].dtmlXMLLoader.xmlDoc.readyState)
-                    {
-                        case 0:
-                            //console.log('id.' + i + ' WFS ' + Buscador.singleton.tipoWFS(Buscador.singleton.requests[i].dtmlXMLLoader.filePath) + ' readyState: uninitialized');
-                            break;
-                        case 1:
-                            //console.log('id.' + i + ' WFS ' + Buscador.singleton.tipoWFS(Buscador.singleton.requests[i].dtmlXMLLoader.filePath) + ' readyState: loading');
-                            break;
-                        case 2:
-                            //console.log('id.' + i + ' WFS ' + Buscador.singleton.tipoWFS(Buscador.singleton.requests[i].dtmlXMLLoader.filePath) + ' readyState: loaded');
-                            break;
-                        case 3:
-                            //console.log('id.' + i + ' WFS ' + Buscador.singleton.tipoWFS(Buscador.singleton.requests[i].dtmlXMLLoader.filePath) + ' readyState: interactive');
-                            break;
-                        case 4:
-                            contadorFinalizadas++;
-                            break;
-                    }
-                }
-                else
-                {
-                    contadorSinInicializar++;
+                    case 0:
+                        //waitingToStart
+                        waitingToStart++;
+                        break;
+                    case 1:
+                        //running
+                        running++;
+                        break;
+                    case 2:
+                        //finished
+                        finished++;
+                        break;
                 }
             }
             
-            return Buscador.singleton.requests.length - contadorFinalizadas - contadorSinInicializar;
+            return running;
         },
         
         tipoWFS: function(url){
