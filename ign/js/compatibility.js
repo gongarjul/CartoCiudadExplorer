@@ -8,7 +8,7 @@
     if(!String.prototype.trim) {
         String.prototype.trim = function () {
             return this.replace(/^\s+|\s+$/g,'');
-        }
+        };
     }
 })();
 
@@ -25,7 +25,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
     if(result.length > 0)
     {
         //xpath devolvio nodos
-        return result
+        return result;
     }
     else
     {
@@ -75,7 +75,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
             {
                 //si en el nombre del nodo no aparece el caracter :
                 //no tiene namespace añadir uno
-                colonIndex = nodeNames[i].search(':')
+                colonIndex = nodeNames[i].search(':');
                 if(colonIndex < 0)
                 {
                     nodeNames[i] = nons + ':' + nodeNames[i];
@@ -107,7 +107,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
                     }
                 }
             }
-            newXpathExp[newXpathExp.length] = nodeNames[i]
+            newXpathExp[newXpathExp.length] = nodeNames[i];
         }
 
         //3.-- en el caso de varios namespaces diferentes es necesario

@@ -17,7 +17,7 @@ function zoomPanManage(event) {
     
     var map = event.object;
     var centroMapa = map.getCenter();
-    var srsSrc = map.projection, srsDest;
+    var srsSrc = map.projection, srsDest = '';
     
 	//dependiendo del nivel de zoom lo más adecuado será visualizar
     //la información en coordenadas geogáficas o en coordenadas UTM
@@ -76,7 +76,7 @@ function changeSRS(map, srsSrc, srsDest) {
     var punto = map.getCenter();
 	var prjSrc = new OpenLayers.Projection(srsSrc);
     var prjDest = new OpenLayers.Projection(srsDest);
-    var options;
+    var options = {};
     var maxResolution, minResolution;
     var vectorLayers = [];
     
@@ -109,7 +109,7 @@ function changeSRS(map, srsSrc, srsDest) {
     //para cada layer se ha de realizar lo mismo que para el mapa
     //teniendo en cuenta que la visualizacion de algunas capas según
     //el nivel de zoom puede estar limitada
-    for( i=0; i<map.layers.length; i++){
+    for(var i=0; i<map.layers.length; i++){
     
         maxResolution = map.layers[i].maxResolution;
         minResolution = map.layers[i].minResolution;
@@ -142,7 +142,7 @@ function changeSRS(map, srsSrc, srsDest) {
         
         if(map.layers[i] instanceof OpenLayers.Layer.Vector)
         {
-            for(j=0; j < map.layers[i].features.length; j++)
+            for(var j=0; j < map.layers[i].features.length; j++)
             {
                 var feature = map.layers[i].features[j];
                 feature.geometry = feature.geometry.transform(new OpenLayers.Projection(srsSrc), new OpenLayers.Projection(srsDest));
@@ -189,11 +189,11 @@ function zoomToExtentSRS(map, xmin, ymin, xmax, ymax, srsCoor){
     
     //3.- a partir de la resolucion calculamos el nivel de zoom
     //      nos quedaremos con el menor de los dos
-    var zoomX = map.getZoomForResolution(resX,false)
+    var zoomX = map.getZoomForResolution(resX,false);
     var zoomY = map.getZoomForResolution(resY,false);
     var zoomLevel = zoomX <= zoomY?zoomX:zoomY;
     
-    var srsBBOX;
+    var srsBBOX = '';
 
     if(zoomLevel > 8)
     {

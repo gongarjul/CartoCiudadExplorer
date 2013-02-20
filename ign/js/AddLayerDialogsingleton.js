@@ -1,5 +1,5 @@
 /*
- * AddLayerDialogSINGLETON.js define una clase para aÒadir
+ * AddLayerDialogSINGLETON.js define una clase para a√±adir
  * 'capas' procedentes de un servicio WMS a un objeto
  * Map de OpenLayers
  */
@@ -23,12 +23,12 @@ var AddLayerDialog = {
         connectToServerForm: null,
         //arbol con las capas y estilos 
         wmsLayersTree: null,
-        //formulario para aÒadir una capa a nuestro mapa
+        //formulario para a√±adir una capa a nuestro mapa
         addLayerForm: null,
         //barra de estado para informar
         addLayerStatusBar: null,
         
-        //mapa al que se le aÒadira la capa
+        //mapa al que se le a√±adira la capa
         map: null,
 
         showModal: function(map){
@@ -41,7 +41,7 @@ var AddLayerDialog = {
             //creamos una ventana
             var addLayer = windows.createWindow('addLayer', 0, 0, 470, 550);
             
-            //aÒadimos un conjunto de pestaÒas, en cada pestaÒa habr· un formato
+            //a√±adimos un conjunto de pesta√±as, en cada pesta√±a habr√± un formato
             var formats = addLayer.attachTabbar();
             formats.setImagePath('../api/dhtmlx-3.5/dhtmlxTabbar/codebase/imgs/');
 
@@ -50,15 +50,15 @@ var AddLayerDialog = {
             var wmsTab = formats.cells('wmsTab');
             formats.setTabActive('wmsTab');
 
-            //aÒadimos un layout que contendra:
+            //a√±adimos un layout que contendra:
             //a. el formulario para conectarnos al servidor
             //b. el arbol con las capas
-            //c. el formaulario para aÒadir la capa al mapa
+            //c. el formaulario para a√±adir la capa al mapa
             var wmsLayout = wmsTab.attachLayout('3E');
 
             //creamos la celda a
             var a = wmsLayout.cells('a');
-            //indicamos la altura, ocultamos la cabecera y fijamos el tamaÒo de la celda
+            //indicamos la altura, ocultamos la cabecera y fijamos el tama√±o de la celda
             a.setHeight('185');
             a.hideHeader();
             a.fixSize(1,1);
@@ -78,7 +78,7 @@ var AddLayerDialog = {
             ];
             //instanciamos el formulario
             this.connectToServerForm = a.attachForm(str);
-            //aÒadimos el evento onButtonClick para detectar cuando se pulsa el boton conectar
+            //a√±adimos el evento onButtonClick para detectar cuando se pulsa el boton conectar
             this.connectToServerForm.attachEvent('onButtonClick', function(name, command){
                 //this se refiere a connectToServerForm
                 AddLayerDialog.singleton.connectToServerForm_onButtonClick(name, command);
@@ -86,7 +86,7 @@ var AddLayerDialog = {
 
             //creamos la celda b
             var b = wmsLayout.cells('b');
-            //indicamos titulo, altura y fijamos el tamaÒo de la celda
+            //indicamos titulo, altura y fijamos el tama√±o de la celda
             b.setText('Capas & Estilos');
             b.setHeight('210');
             b.fixSize(1,1);
@@ -95,10 +95,10 @@ var AddLayerDialog = {
             this.wmsLayersTree = b.attachTree();
             //indicamos la ruta a los gif que utilizara el arbol
             this.wmsLayersTree.setImagePath('../api/dhtmlx-3.5/dhtmlxTree/codebase/imgs/csh_dhx_skyblue/');
-            //aÒadimos checkboxes en las ramas
+            //a√±adimos checkboxes en las ramas
             this.wmsLayersTree.enableCheckBoxes(true, false);
-            //aÒadimos el evento onBeforeCheck para controlar si dejamos checkear o no esa rama
-            //en la version profesional con ocultarlos serÌa suficiente
+            //a√±adimos el evento onBeforeCheck para controlar si dejamos checkear o no esa rama
+            //en la version profesional con ocultarlos ser√±a suficiente
             this.wmsLayersTree.attachEvent('onBeforeCheck', function(id, state){
                 //this se refiere a wmsLayersTree
                 return AddLayerDialog.singleton.wmsLayersTree_onBeforeCheck(id, state);
@@ -106,7 +106,7 @@ var AddLayerDialog = {
             
             //creamos la celda c
             var c = wmsLayout.cells('c');
-            //indicamos la altura, ocultamos la cabecera y fijamos el tamaÒo de la celda
+            //indicamos la altura, ocultamos la cabecera y fijamos el tama√±o de la celda
             c.setHeight('80');
             c.hideHeader();
             c.fixSize(1,1);
@@ -115,19 +115,19 @@ var AddLayerDialog = {
             var str = [
                 { type:"settings" , labelWidth:80, inputWidth:250, position:"absolute"  },
                 { type:"input" , name:"layerName", label:"Nombre:", validate:"NotEmpty", inputWidth:270, required:true, labelLeft:5, labelTop:5, inputLeft:70, inputTop:5  },
-                { type:"button" , name:"addLayer", label:"AÒadir", value:"AÒadir", width:"85", inputWidth:85, inputLeft:355, inputTop:5  },
+                { type:"button" , name:"addLayer", label:"A√±adir", value:"A√±adir", width:"85", inputWidth:85, inputLeft:355, inputTop:5  },
                 { type:"btn2state" , name:"tiledBtn2state", label:"Peticiones teseladas:", labelWidth:120, labelAlign:"left", inputWidth:170, labelLeft:150, labelTop:30, inputLeft:275, inputTop:25  },
                 { type:"btn2state" , name:"transparentBtn2state", label:"Transparente:", labelAlign:"left", inputWidth:50, labelLeft:5, labelTop:30, inputLeft:90, inputTop:25  }
             ];
             //instanciamos el formulario
             this.addLayerForm = c.attachForm(str);
-            //aÒadimos el evento onButtonClickpara detectar cuando se pulsa el botÛn aÒadir
+            //a√±adimos el evento onButtonClickpara detectar cuando se pulsa el bot√≥n a√±adir
             this.addLayerForm.attachEvent('onButtonClick', function(name, command){
                 //this se refiere a addLayerForm
                 AddLayerDialog.singleton.addLayerForm_onButtonClick(name, command);
             });
 
-            //aÒadimos un statusbar para mantener al usuario informado
+            //a√±adimos un statusbar para mantener al usuario informado
             this.addLayerStatusBar = addLayer.attachStatusBar();
             this.addLayerStatusBar.setText('');
 
@@ -147,8 +147,8 @@ var AddLayerDialog = {
     
             if(this.connectToServerForm.validateItem('urlCombo'))
             {
-                //se ha pulsado el botÛn conectar y urlCombo tiene una direcciÛn
-                var server = this.connectToServerForm.getCombo('urlCombo').getComboText()
+                //se ha pulsado el bot√≥n conectar y urlCombo tiene una direcci√≥n
+                var server = this.connectToServerForm.getCombo('urlCombo').getComboText();
                 this.addLayerStatusBar.setText('Conectando con: ' + server);
                 
                 //componemos la peticion
@@ -165,7 +165,7 @@ var AddLayerDialog = {
                 
                     if(loader.xmlDoc.status == 200 && loader.xmlDoc.responseXML)
                     {   
-                        AddLayerDialog.singleton.addLayerStatusBar.setText('ConexiÛn establecida, procesando respuesta');
+                        AddLayerDialog.singleton.addLayerStatusBar.setText('Conexi√±n establecida, procesando respuesta');
 
                         //parseamos el xml devuelto para mostrar en el dialogo
                         //--el abstract del capabilities en el cuadro de texto
@@ -175,7 +175,7 @@ var AddLayerDialog = {
                         //--la estructura de capas y estilos en arbol
                         AddLayerDialog.singleton.buildWMSLayersTree(loader);
                         AddLayerDialog.singleton.addLayerStatusBar.setText('');
-                        AddLayerDialog.singleton.addLayerForm.unlock()
+                        AddLayerDialog.singleton.addLayerForm.unlock();
                     }else{
                         AddLayerDialog.singleton.addLayerStatusBar.setText('No se ha obtenido una respuesta valida');
                     }
@@ -189,7 +189,7 @@ var AddLayerDialog = {
     
         buildWMSLayersTree: function(loader){
         
-            //vamos a seleccionar el primer elemento layer de la seccion cacpabilities
+            //vamos a seleccionar el primer elemento layer de la seccion capabilities
             var layer  = loader.doXPathMB('//Capability/Layer', null, [{prefix:null, uri:'http://www.opengis.net/wms'}]);
             
             //conformamos un arbol de objetos con los elementos
@@ -221,7 +221,7 @@ var AddLayerDialog = {
                 name = null;
             }
             
-            //una vez tenemos el title y opcionalmente el name aÒadimos una rama al arbol
+            //una vez tenemos el title y opcionalmente el name a√±adimos una rama al arbol
             var rama = '';
             if(title)
             {
@@ -241,14 +241,14 @@ var AddLayerDialog = {
                 this.wmsLayersTree.insertNewItem(id.substr(0,id.lastIndexOf('-')), id, rama, 0, 0, 0, 0, 'SELECT');
             }
             
-            //aÒadimos tantas ramas hijas como nodos Style haya
+            //a√±adimos tantas ramas hijas como nodos Style haya
             var styles = loader.doXPathMB('./Style', layer, [{prefix:null, uri:'http://www.opengis.net/wms'}]);
             if(styles.length > 0)
             {
                 this.wmsLayersTree.insertNewItem(id, id + '-1','Styles (' + styles.length + ')', 0, 0, 0, 0, 'SELECT');
                 for(var i=0; i<styles.length; i++)
                 {
-                    this.processStyleNode(loader, styles[i], id + '-1-' + i)
+                    this.processStyleNode(loader, styles[i], id + '-1-' + i);
                 }
                 
             }
@@ -259,7 +259,7 @@ var AddLayerDialog = {
                 this.wmsLayersTree.insertNewItem(id, id + '-2','Layers (' + layers.length + ')', 0, 0, 0, 0, 'SELECT');
                 for(var i=0; i<layers.length; i++)
                 {
-                    this.processLayerNode(loader, layers[i], id + '-2-' + i)
+                    this.processLayerNode(loader, layers[i], id + '-2-' + i);
                 }
             }
         },
@@ -353,7 +353,7 @@ var AddLayerDialog = {
             
             layers = layers.split(',');
             for (var i = layers.length-1; i >= 0; i--) {
-                //si el checked es hijo de un Layers entonces aÒadir a layers
+                //si el checked es hijo de un Layers entonces a√±adir a layers
                 if(this.wmsLayersTree.getItemText(this.wmsLayersTree.getParentId(layers[i])).search('^Layers')>=0)
                 {
                     layers[i] = this.wmsLayersTree.getItemText(layers[i]);
@@ -365,7 +365,7 @@ var AddLayerDialog = {
 
             if(layers.length == 0)
             {
-                this.addLayerStatusBar.setText('Por favor seleccione alguna capa en el arbol Capas & Estilos adem·s de los estilos');
+                this.addLayerStatusBar.setText('Por favor seleccione alguna capa en el arbol Capas & Estilos adem√°s de los estilos');
                 return;
             }
             
@@ -376,9 +376,9 @@ var AddLayerDialog = {
             var transparent = this.addLayerForm.getItemValue('transparentBtn2state')==0? false : true;
             var singleTile = !(this.addLayerForm.getItemValue('tiledBtn2state')==0? false : true);
             
-            //aÒadimos al mapa
+            //a√±adimos al mapa
             this.map.addLayer(new OpenLayers.Layer.WMS(layerName, url, {layers: layers, transparent:transparent},{singleTile: singleTile}));
         }
 
     }
-}
+};

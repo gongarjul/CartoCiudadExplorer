@@ -32,8 +32,8 @@ XMLTree.prototype.buildTree = function()
     this.tree.deleteChildItems('1');
     this.tree.deleteItem('1',false);
     //procesamos de forma recursiva cada nodo
-	this.proccessNode(null, 1, this.xmlDocument)
-}
+	this.proccessNode(null, 1, this.xmlDocument);
+};
 
 /*
  *
@@ -95,6 +95,6 @@ XMLTree.prototype.proccessNode = function(parentId, id, node)
             
         }
     }
-}
+};
 
 

@@ -176,7 +176,7 @@ es.IGN.LayerSwitcher = OpenLayers.Class(OpenLayers.Control.LayerSwitcher, {
                 var buttonSink = document.createElement("input");
                 buttonSink.id = this.id + "_sink_" + layer.name;
                 buttonSink.type = "image";
-                buttonSink.name = "sink_" + layer.name
+                buttonSink.name = "sink_" + layer.name;
                 buttonSink.src = "./ign/img/sink.png";
  
                 var context = {

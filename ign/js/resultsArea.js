@@ -78,7 +78,7 @@ var resultsArea = {
         },
 
         resultsDataView_onItemClick: function(id,ev,html){
-            var feature = this.resultsDataView.get(id)
+            var feature = this.resultsDataView.get(id);
             this.zoomToFeature(feature);
             this.showDetailedText(feature);
         },
@@ -87,15 +87,24 @@ var resultsArea = {
         
             if(!features || features.length == 0)
             {
-                var features = [{__text: 'No se han obtenido resultados'}]
+                var features = [{__text: 'No se han obtenido resultados'}];
             }
             else
             {
                 var geojson_format = new OpenLayers.Format.GeoJSON();
-                var vector_layer = new OpenLayers.Layer.Vector(); 
+                var vector_layer;
+                if(features.length == 1)
+                {
+                    vector_layer = new OpenLayers.Layer.Vector(features[0].__text);
+                }
+                else
+                {
+                    vector_layer = new OpenLayers.Layer.Vector('Resultado'); 
+                }
+                
                 map.addLayer(vector_layer);
 
-                var geoJSONfeatureCollection = { type: "FeatureCollection", features: [] }
+                var geoJSONfeatureCollection = { type: "FeatureCollection", features: [] };
                 var geoJSONfeature;
                 
                 var srsSrc = 'EPSG:4258', srsDest = this.map.projection;
@@ -106,7 +115,7 @@ var resultsArea = {
                     //con el resumen en __text 
                     //componemos un __detailedText a partir de las 
                     //propiedades del json
-                    features[i].__detailedText = '<h3>' + features[i].__tipoWFS + '</h3>'
+                    features[i].__detailedText = '<h3>' + features[i].__tipoWFS + '</h3>';
                     features[i].__detailedText += this.proccesObject(features[i]);
                     
                     if('posicionEspacial' in features[i])
@@ -127,7 +136,7 @@ var resultsArea = {
                                         coordinates: 
                                             gml_MultiSurface2geoJSON_MultiPolygon(
                                                 features[i].posicionEspacial[j]['app:geom'][0]['gml:MultiSurface'][0])
-                                    }
+                                    };
 
                                     geoJSONfeatureCollection.features[geoJSONfeatureCollection.features.length] = geoJSONfeature;                                    
                                 }
@@ -138,7 +147,7 @@ var resultsArea = {
                                         coordinates: 
                                             gml_Surface2geoJSON_MultiPolygon(
                                                 features[i].posicionEspacial[j]['app:geom'][0]['gml:Surface'][0])
-                                    }
+                                    };
 
                                     geoJSONfeatureCollection.features[geoJSONfeatureCollection.features.length] = geoJSONfeature;                                    
                                     
@@ -148,7 +157,7 @@ var resultsArea = {
                                     geoJSONfeature.geometry = {
                                         type: "MultiLineString",
                                         coordinates: []
-                                    }
+                                    };
 
                                     for(var k=0; k<features[i].posicionEspacial[j]['app:geom'].length; k++)
                                     {
@@ -166,7 +175,7 @@ var resultsArea = {
                                     type: "Point", 
                                     coordinates: 
                                         gml_Point2geoJSON_Point(features[i].posicionEspacial[j]['gml:Point'][0])
-                                }
+                                };
                                 
                                 geoJSONfeatureCollection.features[geoJSONfeatureCollection.features.length] = geoJSONfeature;
                             }
@@ -198,25 +207,20 @@ var resultsArea = {
                     this.zoomToFeature(features[0]);
                     this.showDetailedText(features[0]);
                 }
+                else
+                {
+                    this.resultsAreaAccordion.cells('a').open();
+                }
             }
             
         },    
 
         showDetailedText: function(feature){
         
-            console.log(feature);
-            doc = document.getElementById('detail').contentDocument;
-			if(doc == undefined || doc == null)
-            {
-				doc= document.getElementById('detail').contentWindow.document;
-            }
-			doc.open();
-            
-            //doc.write('<a href="javascript:(function(){resultsArea.singleton.resultsAreaAccordion.cells(\'b\').open();})()">Volver a resultados</a><br/>');
-			doc.write(feature.__detailedText);
-            //doc.write('<a href="javascript:(function(){resultsArea.singleton.resultsAreaAccordion.cells(\'b\').open();})()">Volver a resultados</a><br/>');
-			doc.close();
-            
+            document.getElementById('detail').innerHTML = 
+                '<div class=\'detail\'><a href="javascript:(function(){resultsArea.singleton.resultsAreaAccordion.cells(\'a\').open();})()">Volver a resultados</a><br/>' + 
+                feature.__detailedText + 
+                '<a href="javascript:(function(){resultsArea.singleton.resultsAreaAccordion.cells(\'a\').open();})()">Volver a resultados</a><br/></div>';
             this.resultsAreaAccordion.cells('b').open();
         },
         
@@ -250,6 +254,7 @@ var resultsArea = {
         proccesObject: function(object){
 
             var hasChilds = false;
+            var tagvalue = '';
 
             var text = '<ul>';
             
@@ -257,7 +262,7 @@ var resultsArea = {
             {
                 if(property.search(/^_tagvalue/) >= 0)
                 {
-                    var tagvalue = '<li>' + object[property] + '</li>';
+                    tagvalue = '<li>' + object[property] + '</li>';
                 }
              
                 if(property.search(/^_/) < 0 &&
@@ -272,8 +277,8 @@ var resultsArea = {
                     else if(object[property] instanceof Array)
                     {
                         //mas objetos hijo
-                        hasChilds = true
-                        text += '<li>' + property + ':</li>'
+                        hasChilds = true;
+                        text += '<li>' + property + ':</li>';
                         for(var i = 0; i < object[property].length; i++)
                         {
                            text+= this.proccesObject(object[property][i]);
@@ -287,7 +292,7 @@ var resultsArea = {
                 text += tagvalue;
             }
             
-            text += '</ul>'
+            text += '</ul>';
             
             return text;
         },

@@ -102,7 +102,18 @@ function gml_LinearRing2geoJSON_LineString(LinearRing){
 function gml_Point2geoJSON_Point(Point){
 
     //gml:Point -> [1..1] gml:pos (list of doubles)
-    var geoJSONpoint = Point['gml:pos'][0]._tagvalue.split(' ');
+	//gml:Point -> [1..1] gml:coordinates (gml:CoordinatesType string use @cs to know the coordinate separator character)
+	var geoJSONpoint = [];
+	
+	if('gml:pos' in Point)
+	{
+		geoJSONpoint = Point['gml:pos'][0]._tagvalue.split(' ');
+	}
+	else if('gml:coordinates' in Point)
+	{
+		geoJSONpoint = Point['gml:coordinates'][0]._tagvalue.split(Point['gml:coordinates'][0].cs);
+	}
+    
     
     //text -> float
     for(var i=0; i<geoJSONpoint.length; i++)
@@ -110,5 +121,5 @@ function gml_Point2geoJSON_Point(Point){
         geoJSONpoint[i] = parseFloat(geoJSONpoint[i]);
     }
     
-    return geoJSONpoint
+    return geoJSONpoint;
 };

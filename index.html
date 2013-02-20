@@ -1,5 +1,5 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
-<meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
 
   <head>
     <title>CartoCiudadExplorer by JGG. Powered by: OpenLayers and DHTMLX. Special thanks to "Cowboy" Ben Alman and Mozilla Developer Network</title>
@@ -15,23 +15,25 @@
 
         #map{position:absolute; width:100%; height:100%;}
         
+        .detail{margin:5px;}
+        
     </style>
-	<!--http://dhtmlx.com/docs/products/visualDesigner/live/#g117e7-->
-    <!--Añadimos libreria proj4js-->
+	<!--http://dhtmlx.com/docs/products/visualDesigner/live/#83fb84-->
+    <!--Aï¿½adimos libreria proj4js-->
     <script src="../api/proj4js-1.1.0/lib/proj4js-compressed.js"></script>
-    <!--Añadimos definición de sistemas de coordenadas-->
+    <!--Aï¿½adimos definiciï¿½n de sistemas de coordenadas-->
     <script src="ign/js/srsDefsProj4js.js"></script>
-    <!--Añadimos libreria Openlayers-->
+    <!--Aï¿½adimos libreria Openlayers-->
 	<script src="../api/OpenLayers-2.12/OpenLayers.debug.js"></script>
     <!--Añ¡¤©mos libreria Openlayers-->
 	<script src="../api/jWorkflow-0.7.0/lib/jWorkflow.js"></script>
-    <!--Añadimos la customizacion del layerswitcher-->
+    <!--Aï¿½adimos la customizacion del layerswitcher-->
 	<script src="ign/lib/LayerSwitcher.js"></script>
-    <!--Añadimos las funciones para la gestion de cambio del sistema de coordenadas del map-->
+    <!--Aï¿½adimos las funciones para la gestion de cambio del sistema de coordenadas del map-->
     <script src="ign/js/cambioSRSMap.js"></script>
-    <!--Añadimos las funciones para la gestion de cambio del sistema de coordenadas del map-->
+    <!--Aï¿½adimos las funciones para la gestion de cambio del sistema de coordenadas del map-->
     <script src="ign/js/XMLTree.js"></script>
-	<!--Añadimos el buscadorForm-->
+	<!--Aï¿½adimos el buscadorForm-->
 	<script src="ign/js/BuscadorForm.js"></script>
     <!--Añ¡¤©mos la posibilidad de mostrar un dialogo para introducir capas nuevas-->
     <script src="ign/js/AddLayerDialogsingleton.js"></script>
@@ -41,31 +43,31 @@
     <script src="ign/js/util.js"></script>
 
     
-    <!--Añadimos la posibilidad de hacer un layout-->
-    <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxlayout.css">
-    <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_skyblue.css">
+    <!--Aï¿½adimos la posibilidad de hacer un layout-->
+    <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxlayout.css" />
+    <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_skyblue.css" />
     <script src="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxcommon.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxcontainer.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxlayout.js"></script>
      
-    <!--Añadimos la posibilidad de mostrar ventanas dhtmlx-->
+    <!--Aï¿½adimos la posibilidad de mostrar ventanas dhtmlx-->
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxwindows.css">
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxWindows/codebase/skins/dhtmlxwindows_dhx_skyblue.css">
     <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxcommon.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxcontainer.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxwindows.js"></script>
     
-    <!--Añadimos la posibilidad de mostrar tabbar dhtmlx-->    
+    <!--Aï¿½adimos la posibilidad de mostrar tabbar dhtmlx-->    
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxTabbar/codebase/dhtmlxtabbar.css">
     <script  src="../api/dhtmlx-3.5/dhtmlxTabbar/codebase/dhtmlxcommon.js"></script>
     <script  src="../api/dhtmlx-3.5/dhtmlxTabbar/codebase/dhtmlxtabbar.js"></script>    
     
-    <!--Añadimos la posibilidad de mostrar formularios dhtmlx-->
+    <!--Aï¿½adimos la posibilidad de mostrar formularios dhtmlx-->
     <link rel="stylesheet" type="text/css" href="./../api/dhtmlx-3.5/dhtmlxForm/codebase/skins/dhtmlxform_dhx_skyblue.css">
     <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/dhtmlxcommon.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/dhtmlxform.js"></script>    
     
-    <!--Añadimos la posibilidad de mostrar el boton 0|1 a los formularios y las imagenes-->
+    <!--Aï¿½adimos la posibilidad de mostrar el boton 0|1 a los formularios y las imagenes-->
 	<script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/ext/dhtmlxform_item_btn2state.js"></script>	
     <style type="text/css">
         /* toggle-style checkbox */
@@ -83,13 +85,15 @@
         }
     </style>
 
-    <!--Añadimos la posibilidad de mostrar combos dhtmlx-->
+    <!--Aï¿½adimos la posibilidad de mostrar combos dhtmlx-->
     <script src="../api/dhtmlx-3.5/dhtmlxCombo/codebase/dhtmlxcombo.js"></script>
     <link rel="STYLESHEET" type="text/css" href="../api/dhtmlx-3.5/dhtmlxCombo/codebase/dhtmlxcombo.css">
-    <!--Añadimos la posibilidad de mostrar el combo a los formularios-->    
+    <!--Aï¿½adimos la posibilidad de mostrar el combo a los formularios-->    
     <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/ext/dhtmlxform_item_combo.js"></script>
+    <!--Añ¡¤©mos la posibilidad de fijar el tamaÃ±o de la lista desplegable--> 
+    <script src="../api/dhtmlx-3.5/dhtmlxCombo/codebase/ext/dhtmlxcombo_whp.js"></script>
     
-    <!--Añadimos la posibilidad de mostrar arboles dhtmlx-->
+    <!--Aï¿½adimos la posibilidad de mostrar arboles dhtmlx-->
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxTree/codebase/dhtmlxtree.css">
     <script src="../api/dhtmlx-3.5/dhtmlxTree/codebase/dhtmlxtree.js"></script>   
     
@@ -105,8 +109,6 @@
     dhtmlx.image_path = '../api/dhtmlx-3.5/todoEnUno/codebase/imgs/';
     </script>
 
-    <!--Añadimos la posibilidad de mostrar un arbol de un capabilities-->
-    <script src="ign/js/XMLTreeWindow.js"></script>
     <!--compatibility-->
     <script src="ign/js/compatibility.js"></script>
     
@@ -190,9 +192,6 @@
 			
             map.baseLayer = layer;
             
-            //vlayer = new OpenLayers.Layer.Vector( "Editable" );
-            //map.addLayer(vlayer);
-            
             //TODO doble decode en la cadena del bbox?
             /*
             info = new OpenLayers.Control.WMSGetFeatureInfo({
@@ -217,12 +216,7 @@
             */
             
             map.addControl(new es.IGN.LayerSwitcher());
-            //map.addControl(new OpenLayers.Control.LayerSwitcher());
             map.addControl(new OpenLayers.Control.MousePosition());
-            //map.addControl(new OpenLayers.Control.EditingToolbar(vlayer));
-            //var snap = new OpenLayers.Control.Snapping({layer: vlayer});
-            //map.addControl(snap);
-            //snap.activate();            
 
             map.setCenter(new OpenLayers.LonLat(lon, lat), zoom);  
         }
@@ -271,7 +265,10 @@
         <div id="inProgress" style="background-color:white; width:100px; height:50px; border-radius:10px; position:absolute; left:50%; top:10px; z-index:5000; visibility:hidden">
             <img width="32px" height="32px" src="img/ajax-loader.gif" style="position:absolute; left:34px; top:9px">
         </div>
+        <!--<div id="inProgress" style="background-color:white; border-radius:10px; position:absolute; left:50%; top:10px; z-index:5000; visibility:hidden">
+            <img width="32px" height="32px" src="img/ajax-loader.gif" /><p id='progressText'></p>
+        </div>-->
     </div>
-    <iframe style="WIDTH:100%;HEIGHT:100%" id="detail" name="detail"></iframe>
+    <div style="WIDTH:100%;HEIGHT:100%;overflow:auto;" id="detail" name="detail"></div>
    </body>
 </html>
