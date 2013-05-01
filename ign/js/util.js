@@ -123,3 +123,30 @@ function gml_Point2geoJSON_Point(Point){
     
     return geoJSONpoint;
 };
+
+//gml_LinearRing2geoJSON_LineString: function(linearRing){
+function gml_LineString2geoJSON_LineString(LineString){
+    
+    var lineString = [];
+    
+    //coordinates separator
+    var cs= LineString['gml:Coordinates'][0].cs;
+    //point separator
+    var ts= LineString['gml:Coordinates'][0].ts;
+    
+    
+    //gml:LineString -> [1..1] gml:Coordinates (gml:CoordinatesType? string use @cs to know the coordinate separator character, @ts to know the point separator)
+    var arrayPoint = LineString['gml:Coordinates'][0]._tagvalue.replace(new RegExp(cs,'g'), '#').split(ts);
+
+    //suponemos 2d
+    for(var i=0; i<arrayPoint.length; i+=2)
+    {
+    	if(arrayPoint != '')
+    	{
+    		var arrayCoord = arrayPoint[i].split('#');
+    		lineString[lineString.length] = [parseFloat(arrayCoord[0]), parseFloat(arrayCoord[1])];
+    	}
+    }
+    
+    return lineString;
+};

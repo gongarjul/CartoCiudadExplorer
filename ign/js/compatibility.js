@@ -21,6 +21,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
     if(!result_type) result_type = null;
 
     //probamos sin el uso de namespaces
+    /*
     result = this.doXPath(xpathExp, docObj, null, result_type);
     if(result.length > 0)
     {
@@ -37,7 +38,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
             return result;
         }
     }
-    
+    */
     //o puede ser que necesitemos hacer el xpath
     //con el uso de namespaces
         
@@ -55,7 +56,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
         {
             if(!namespaces[i].prefix)
             {
-                //como mucho solo debería haber un namespace sin prefix
+                //como mucho solo deberï¿½a haber un namespace sin prefix
                 namespaces[i].prefix = nons;
                 break;
             }
@@ -65,7 +66,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
         
         //1.-- separamos todos los nodos
         var nodeNames = xpathExp.split('/');
-        //2.-- añadimos si fuera necesario un prefijo a los nodos que no lo tengan
+        //2.-- aï¿½adimos si fuera necesario un prefijo a los nodos que no lo tengan
         //     y verificamos hasta donde llega el primer prefix
         //     ./nodo1/nodo2/ns3:nodo3
         //     //nodo1
@@ -74,7 +75,7 @@ dtmlXMLLoaderObject.prototype.doXPathMB = function(xpathExp, docObj, namespaces,
             if(nodeNames[i].length > 0 && nodeNames[i] != '.')
             {
                 //si en el nombre del nodo no aparece el caracter :
-                //no tiene namespace añadir uno
+                //no tiene namespace aï¿½adir uno
                 colonIndex = nodeNames[i].search(':');
                 if(colonIndex < 0)
                 {

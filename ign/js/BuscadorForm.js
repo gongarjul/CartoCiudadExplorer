@@ -100,7 +100,7 @@ var Buscador = {
             
             //-- controlar si el usuario pulsa el boton buscar
             this.searchForm.attachEvent('onButtonClick', Buscador.singleton.searchForm_onButtonClick);
-            /*
+            
             //creamos el daemon que ejecutara los jobs
             window.setInterval(function(){
 
@@ -129,7 +129,7 @@ var Buscador = {
 
                 }
             }, 500);
-			*/
+			
         },
 
         searchCombo_onKeyPressed: function(keyCode){
@@ -138,7 +138,7 @@ var Buscador = {
 
             Buscador.singleton.lastKeyAt = (new Date()).getTime();
             //vamos a analizar el texto que esta escribiendo el usuario
-            var texto = this.getComboText();
+            var text = this.getComboText();
             //antes de añadir opciones
             //-- cancelamos cualquier peticion en curso
             //-- borramos las anteriores
@@ -150,7 +150,7 @@ var Buscador = {
             this.clearAll(false);
             this.setOptionHeight(0);
 
-            var components = texto.split(/[,]/);
+            var components = text.split(/[,]/);
             for(var i=0; i<components.length; i++)
             {
                 components[i] = components[i].trim();
@@ -167,6 +167,8 @@ var Buscador = {
             case 3:
             	Buscador.singleton.suggestions3componentSearch(components);
             	break;
+            default:
+            	alert('Demasiados componentes en la dirección');
             }
 
         },
@@ -202,7 +204,33 @@ var Buscador = {
         },
         
         searchForm_onButtonClick: function(name, command){
+        	
+        	//centramos busqueda en componentes
+            var text = this.getComboText();
+
+            var components = text.split(/[,]/);
+            for(var i=0; i<components.length; i++)
+            {
+                components[i] = components[i].trim();
+            }
+
+            switch(components.length)
+            {
+            case 1:
+            	Buscador.singleton.oneComponentSearch(components);
+            	break;
+            case 2:
+            	Buscador.singleton.twoComponentSearch(components);
+            	break;
+            case 3:
+            	Buscador.singleton.threeComponentSearch(components);
+            	break;
+            default:
+            	alert('Demasiados componentes en la dirección');
+            }
+        	
             
+        	/*
         	var searchCombo = this.getCombo('searchCombo');
             
         	if(name == 'searchButton')
@@ -262,6 +290,7 @@ var Buscador = {
                         
                 }
             }
+            */
         	
         },
         
@@ -1590,7 +1619,7 @@ var Buscador = {
                 }
                 baton.pass(data);
             });
-        },
+        }
 
     }
 };

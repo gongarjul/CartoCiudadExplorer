@@ -25,7 +25,7 @@
     <script src="ign/js/srsDefsProj4js.js"></script>
     <!--A�adimos libreria Openlayers-->
 	<script src="../api/OpenLayers-2.12/OpenLayers.debug.js"></script>
-    <!--A񡤩mos libreria Openlayers-->
+    <!--A񡤩mos libreria jworkflow-->
 	<script src="../api/jWorkflow-0.7.0/lib/jWorkflow.js"></script>
     <!--A�adimos la customizacion del layerswitcher-->
 	<script src="ign/lib/LayerSwitcher.js"></script>
@@ -41,74 +41,80 @@
     <script src="ign/js/resultsArea.js"></script>
     <!--Proceso de json de un xml a un geojson-->
     <script src="ign/js/util.js"></script>
+    <!--Proceso de json de un xml a un geojson-->
+    <script src="ign/js/wpsClient.js"></script>
 
-    
-    <!--A�adimos la posibilidad de hacer un layout-->
+	<!--A�adimos la posibilidad de hacer un layout -->
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxlayout.css" />
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_skyblue.css" />
     <script src="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxcommon.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxcontainer.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxLayout/codebase/dhtmlxlayout.js"></script>
      
-    <!--A�adimos la posibilidad de mostrar ventanas dhtmlx-->
+	<!--A�adimos la posibilidad de mostrar ventanas dhtmlx -->
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxwindows.css">
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxWindows/codebase/skins/dhtmlxwindows_dhx_skyblue.css">
     <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxcommon.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxcontainer.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxWindows/codebase/dhtmlxwindows.js"></script>
     
-    <!--A�adimos la posibilidad de mostrar tabbar dhtmlx-->    
+	<!--A�adimos la posibilidad de mostrar tabbar dhtmlx     -->
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxTabbar/codebase/dhtmlxtabbar.css">
     <script  src="../api/dhtmlx-3.5/dhtmlxTabbar/codebase/dhtmlxcommon.js"></script>
     <script  src="../api/dhtmlx-3.5/dhtmlxTabbar/codebase/dhtmlxtabbar.js"></script>    
     
-    <!--A�adimos la posibilidad de mostrar formularios dhtmlx-->
+	<!--A�adimos la posibilidad de mostrar formularios dhtmlx -->
     <link rel="stylesheet" type="text/css" href="./../api/dhtmlx-3.5/dhtmlxForm/codebase/skins/dhtmlxform_dhx_skyblue.css">
     <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/dhtmlxcommon.js"></script>
     <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/dhtmlxform.js"></script>    
     
-    <!--A�adimos la posibilidad de mostrar el boton 0|1 a los formularios y las imagenes-->
+	<!--A�adimos la posibilidad de mostrar el boton 0|1 a los formularios y las imagenes -->
 	<script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/ext/dhtmlxform_item_btn2state.js"></script>	
-    <style type="text/css">
-        /* toggle-style checkbox */
-        /* enabled, not checked */
-        .dhxform_obj_dhx_skyblue div.dhxform_img.btn2state_0 {
-            background-image: url("../api/dhtmlx-3.5/dhtmlxForm/samples/02_items/imgs/toggle_off.png");
-            width: 42px;
-            height: 20px;
-        }
-        /* enabled, checked */
-        .dhxform_obj_dhx_skyblue div.dhxform_img.btn2state_1 {
-            background-image: url("../api/dhtmlx-3.5/dhtmlxForm/samples/02_items/imgs/toggle_on.png");
-            width: 42px;
-            height: 20px;
-        }
-    </style>
+	<style type="text/css">
+		/* toggle-style checkbox */
+		/* enabled, not checked */
+		.dhxform_obj_dhx_skyblue div.dhxform_img.btn2state_0 {
+			background-image: url("img/toggle_off.png");
+			width: 42px;
+			height: 20px;
+			}
+		/* enabled, checked */
+		.dhxform_obj_dhx_skyblue div.dhxform_img.btn2state_1 {
+			background-image: url("img/toggle_on.png");
+			width: 42px;
+			height: 20px;
+		}
+	</style>
 
-    <!--A�adimos la posibilidad de mostrar combos dhtmlx-->
+	<!--A�adimos la posibilidad de mostrar combos dhtmlx -->
     <script src="../api/dhtmlx-3.5/dhtmlxCombo/codebase/dhtmlxcombo.js"></script>
     <link rel="STYLESHEET" type="text/css" href="../api/dhtmlx-3.5/dhtmlxCombo/codebase/dhtmlxcombo.css">
-    <!--A�adimos la posibilidad de mostrar el combo a los formularios-->    
+	<!--A�adimos la posibilidad de mostrar el combo a los formularios     -->
     <script src="../api/dhtmlx-3.5/dhtmlxForm/codebase/ext/dhtmlxform_item_combo.js"></script>
-    <!--A񡤩mos la posibilidad de fijar el tamaño de la lista desplegable--> 
+	<!--A񡤩mos la posibilidad de fijar el tamaño de la lista desplegable  -->
     <script src="../api/dhtmlx-3.5/dhtmlxCombo/codebase/ext/dhtmlxcombo_whp.js"></script>
     
-    <!--A�adimos la posibilidad de mostrar arboles dhtmlx-->
+	<!--A�adimos la posibilidad de mostrar arboles dhtmlx -->
     <link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxTree/codebase/dhtmlxtree.css">
     <script src="../api/dhtmlx-3.5/dhtmlxTree/codebase/dhtmlxtree.js"></script>   
     
-	<link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxaccordion/codebase/skins/dhtmlxaccordion_dhx_skyblue.css">		
-	<script src="../api/dhtmlx-3.5/dhtmlxaccordion/codebase/dhtmlxaccordion.js"></script>
+	<link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxAccordion/codebase/skins/dhtmlxaccordion_dhx_skyblue.css">		
+	<script src="../api/dhtmlx-3.5/dhtmlxAccordion/codebase/dhtmlxaccordion.js"></script>
     
-    <link rel="STYLESHEET" type="text/css" href="../api/dhtmlx-3.5/dhtmlxdataView/codebase/dhtmlxdataview.css">				
-	<script src="../api/dhtmlx-3.5/dhtmlxdataView/codebase/dhtmlxdataview.js"></script>
+    <link rel="STYLESHEET" type="text/css" href="../api/dhtmlx-3.5/dhtmlxDataView/codebase/dhtmlxdataview.css">				
+	<script src="../api/dhtmlx-3.5/dhtmlxDataView/codebase/dhtmlxdataview.js"></script>
 
-    <!--Configuramos el skin y las imagenes-->
+	<!--Configuramos el skin y las imagenes-->
     <script>
-    dhtmlx.skin='dhx_skyblue';
-    dhtmlx.image_path = '../api/dhtmlx-3.5/todoEnUno/codebase/imgs/';
-    </script>
+		dhtmlx.skin='dhx_skyblue';
+		dhtmlx.image_path = '../api/dhtmlx-3.5/todoEnUno/codebase/imgs/';
+	</script>
 
+	<!--Añadimos la posibilidad de mostrar menus -->
+	<script src="../api/dhtmlx-3.5/dhtmlxMenu/codebase/dhtmlxmenu.js"></script>
+	<link rel="stylesheet" type="text/css" href="../api/dhtmlx-3.5/dhtmlxMenu/codebase/skins/dhtmlxmenu_dhx_skyblue.css">    
+
+	
     <!--compatibility-->
     <script src="ign/js/compatibility.js"></script>
     
@@ -192,10 +198,15 @@
 			
             map.baseLayer = layer;
             
-            //TODO doble decode en la cadena del bbox?
-            /*
+            var kk = new OpenLayers.Layer.WMS("DivTerrInfo",
+                    "http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD", 
+                    {'layers': 'DivisionTerritorial', transparent: true, format: 'image/png'},
+                    {isBaseLayer: false});
+            map.addLayer(kk);
+            
             info = new OpenLayers.Control.WMSGetFeatureInfo({
                 url: 'http://www.cartociudad.es/wms/CARTOCIUDAD/CARTOCIUDAD', 
+                layers: [kk],
                 title: 'Identify features by clicking',
                 queryVisible: true,
                 eventListeners: {
@@ -213,12 +224,13 @@
             });
             map.addControl(info);
             info.activate();            
-            */
+            
             
             map.addControl(new es.IGN.LayerSwitcher());
             map.addControl(new OpenLayers.Control.MousePosition());
 
-            map.setCenter(new OpenLayers.LonLat(lon, lat), zoom);  
+            map.setCenter(new OpenLayers.LonLat(lon, lat), zoom);
+            
         }
             
         var dhxLayout;
@@ -226,16 +238,16 @@
 
         dhtmlxEvent(window,'load',function(){
 
-            init();
-            
+        	init();
+        	
+        	
             var main_layout = new dhtmlXLayoutObject(document.body, '3T');
 
             var buscador = main_layout.cells('a');
             buscador.setHeight('50');
             buscador.hideHeader();
             buscador.fixSize(0,1);
-			Buscador.singleton.initialize(buscador, map);
-			
+			Buscador.singleton.initialize(buscador, map);            
 			
             var resultados = main_layout.cells('b');
             resultados.setWidth('400');
@@ -248,12 +260,12 @@
 			mapa.fixSize(1,1);			
             mapa.attachObject('map');
             map.updateSize();
-
+            wpsClient.singleton.initialize(map);
+        	        	
             main_layout.attachEvent('onResizeFinish',function(){ map.updateSize();});
             main_layout.attachEvent('onPanelResizeFinish',function(){ map.updateSize();});
             main_layout.attachEvent('onExpand',function(){ map.updateSize();});
             main_layout.attachEvent('onCollapse',function(){ map.updateSize();});
-            
         });   
 
     </script>
@@ -261,13 +273,10 @@
 
   <body>
 
-    <div id="map" style="z-index: 1">
+    <div id="map" style="z-index: 1; position: absolute">
         <div id="inProgress" style="background-color:white; width:100px; height:50px; border-radius:10px; position:absolute; left:50%; top:10px; z-index:5000; visibility:hidden">
             <img width="32px" height="32px" src="img/ajax-loader.gif" style="position:absolute; left:34px; top:9px">
         </div>
-        <!--<div id="inProgress" style="background-color:white; border-radius:10px; position:absolute; left:50%; top:10px; z-index:5000; visibility:hidden">
-            <img width="32px" height="32px" src="img/ajax-loader.gif" /><p id='progressText'></p>
-        </div>-->
     </div>
     <div style="WIDTH:100%;HEIGHT:100%;overflow:auto;" id="detail" name="detail"></div>
    </body>

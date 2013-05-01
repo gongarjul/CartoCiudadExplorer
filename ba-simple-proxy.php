@@ -163,9 +163,6 @@ if ( !$url ) {
   
 } else {
 
-  //----------- add to debug ------------
-  $firephp->log('Entrando en php'); 
-  //-------------------------------------
   //si url tiene key=value pairs realizar encode de los mismos
   $questionMarkPos = strpos ($url , '?');
   if(!($questionMarkPos === FALSE)) {
@@ -176,7 +173,10 @@ if ( !$url ) {
     for($i=0; $i < count($params); $i++){
       $key = substr( $params[$i] , 0 , strpos ($params[$i] , '='));
       $value = substr( $params[$i] , strpos ($params[$i] , '=') + 1);
-      $params[$i] = $key . '=' . urlencode(utf8_decode($value)); 
+      //openlayers encode las peticiones getfeatureinfo (urldecode)
+      //cuidado con los acentos ñ's (utf8_decode)
+      //por ultimo los parametros tienen que ir encoded
+      $params[$i] = $key . '=' . urlencode(utf8_decode(urldecode($value))); 
       if($i != count($params))
       {
         $url .= $params[$i] . '&';
@@ -193,7 +193,18 @@ if ( !$url ) {
   
   if ( strtolower($_SERVER['REQUEST_METHOD']) == 'post' ) {
     curl_setopt( $ch, CURLOPT_POST, true );
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, $_POST );
+    //curl_setopt( $ch, CURLOPT_POSTFIELDS, $_POST );
+        
+    $postString = '';
+    foreach ($_POST as $key => $value){
+    	$postString .= $key . '=' . $value;
+    }
+  //----------- add to debug ------------
+  $firephp->log($postString, 'post data'); 
+  //-------------------------------------
+
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $postString );
+
   }
   
   if ( $_GET['send_cookies'] ) {
@@ -215,25 +226,22 @@ if ( !$url ) {
   
   curl_setopt( $ch, CURLOPT_USERAGENT, $_GET['user_agent'] ? $_GET['user_agent'] : $_SERVER['HTTP_USER_AGENT'] );
 
-  //----------- add to debug ------------
-  $firephp->log('Realizando la peticion');
-  //-------------------------------------
-
   list( $header, $contents ) = preg_split( '/([\r\n][\r\n])\\1/', curl_exec( $ch ), 2 );
   
   $status = curl_getinfo( $ch );
   
   curl_close( $ch );
+
   //----------- add to debug ------------
-  //$firephp->log($status, 'Status');
-  //$firephp->log($header, 'Header');
-  //$firephp->log($contents, 'Content');
+  $firephp->log($status, 'Status');
+  $firephp->log($header, 'Header');
+  $firephp->log($contents, 'Content');
   //-------------------------------------
 }
 
 // Split header text into an array.
 $header_text = preg_split( '/[\r\n]+/', $header );
-
+$firephp->log($header_text, 'Header_text');
 if ( $_GET['mode'] == 'native' ) {
   if ( !$enable_native ) {
     $contents = 'ERROR: invalid mode';
@@ -246,11 +254,19 @@ if ( $_GET['mode'] == 'native' ) {
       header( $header );
     }
   }
+  //nos aseguramos que el content type sea xml
+  header('Content-Type: text/xml; charset=UTF-8');
   
-  print $contents;
-  //----------- add to debug ------------
-  $firephp->log($status, 'Saliendo');
-  //-------------------------------------
+  //en peticiones post parece llegar los header tambien en el content
+  list( $var1, $var2 ) = preg_split( '/([\r\n][\r\n])\\1/', $contents, 2 );
+  if ( ! isset( $var2 ) ) {
+    //wfs xml aparece aqui
+    print $var1;
+  } else {
+    //wps xml aparece aqui
+    print $var2;
+  }
+  //print $contents;
   
 } else {
   
